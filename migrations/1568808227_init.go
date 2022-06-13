@@ -42,7 +42,7 @@ func init() {
 			  deleted_at timestamp NULL DEFAULT NULL,
 			  name varchar(255) NOT NULL,
 			  subject varchar(255) NOT NULL,
-			  author_id text,
+			  author_id varchar(255) NOT NULL,
 			  available bool DEFAULT true,
 			  available_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			  title varchar(255) NOT NULL,

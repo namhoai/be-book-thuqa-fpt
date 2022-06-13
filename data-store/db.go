@@ -19,6 +19,8 @@ type DbUtil interface {
 	InsertData
 	GetData
 	BookIssue
+	DeleteData
+	UpdateData
 	VerifyUser(models.LoginDetails) (*models.Account, error)
 }
 
@@ -53,6 +55,18 @@ type BookIssue interface {
 	CheckAvailability(uint) (bool, error)
 	IssueBook(uint, uint) error
 	ReturnBook(uint) error
+}
+
+type DeleteData interface {
+	DeleteBook(uint) error
+}
+
+type UpdateData interface {
+	UpdateNameOfBook(uint, string) error
+	UpdateSubjectOfBook(uint, string) error
+	UpdateAuthorOfBook(uint, string) error
+	UpdateTitleOfBook(uint, string) error
+	UpdateISBNOfBook(uint, string) error
 }
 
 var retryAttempts = 0

@@ -15,6 +15,12 @@ func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 		r.Get("/get-history/{id}", srv.getHistory)
 		r.Get("/complete-history", srv.getCompleteHistory)
 		r.Get("/return-book/{id}", srv.returnBook)
+		r.Delete("/delete-book/{id}", srv.deleteBook)
+		r.Patch("/update-name-of-book/{id}", srv.updateNameOfBook)
+		r.Patch("/update-subject-of-book/{id}", srv.updateSubjectOfBook)
+		r.Patch("/update-author-of-book/{id}", srv.updateAuthorOfBook)
+		r.Patch("/update-title-of-book/{id}", srv.updateTitleOfBook)
+		r.Patch("/update-isbn-of-book/{id}", srv.updateISBNOfBook)
 	})
 	r.Route("/user", func(r chi.Router) {
 		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
