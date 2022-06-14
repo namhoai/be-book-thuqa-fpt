@@ -12,7 +12,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
-	"github.com/library/efk"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	password_hash "github.com/library/password-hash"
@@ -131,7 +130,6 @@ func (srv *Server) health() http.HandlerFunc {
 func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
-		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
 	}
 	http.Error(w, err.Error(), statusCode)
 

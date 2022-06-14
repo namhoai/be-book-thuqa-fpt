@@ -20,7 +20,6 @@ type BaseModel struct {
 
 type Account struct {
 	BaseModel
-	Name         string `json:"name"`
 	Email        string `json:"email"`
 	AccountRole  string `json:"accountRole"`
 	Password     string `gorm:"-" json:"password"`
@@ -31,57 +30,23 @@ func (Account) TableName() string {
 	return "account"
 }
 
-type Author struct {
-	BaseModel
-	Name        string `json:"name"`
-	DateOfBirth string `json:"dateOfBirth"`
-}
-
-func (Author) TableName() string {
-	return "author"
-}
-
 type Book struct {
 	BaseModel
 	Name          string    `json:"name"`
-	Subject       string    `json:"subject"`
-	AuthorID      string    `json:"authorId"`
-	AuthorName    string    `json:"authorName"`
+	ISBN          string    `json:"isbn"`
+	Stock         uint      `json:"stock"`
+	Author        string    `json:"author"`
+	Year          string    `json:"year"`
+	Edition       uint      `json:"edition"`
+	Cover         string    `json:"cover"`
+	Abstract      string    `json:"abstract"`
+	Category      string    `json:"category"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
-	Title         string    `json:"title"`
-	ISBN          string    `json:"isbn"`
 }
 
 func (Book) TableName() string {
 	return "book"
-}
-
-type BookXAuthor struct {
-	BookID   uint `json:"bookId"`
-	AuthorID uint `json:"authorId"`
-}
-
-func (BookXAuthor) TableName() string {
-	return "book_x_author"
-}
-
-type Subject struct {
-	BaseModel
-	Name string `json:"name"`
-}
-
-func (Subject) TableName() string {
-	return "subject"
-}
-
-type SubjectXBook struct {
-	SubjectID uint `json:"subjectId"`
-	BookID    uint `json:"bookId"`
-}
-
-func (SubjectXBook) TableName() string {
-	return "subject_x_book"
 }
 
 type BookHistory struct {
@@ -110,12 +75,4 @@ type LoginDetails struct {
 type AuthInfo struct {
 	Role string
 	jwt.StandardClaims
-}
-
-type EfkLogger struct {
-	ID         string    `json:"id"`
-	Timestamp  time.Time `json:"timestamp"`
-	Task       string    `json:"task"`
-	Error      string    `json:"error"`
-	StatusCode int       `json:"statusCode"`
 }

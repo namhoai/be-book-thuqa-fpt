@@ -2,21 +2,19 @@ package main
 
 import (
 	"flag"
-	"github.com/fluent/fluent-logger-golang/fluent"
+	"os"
+
 	"github.com/kelseyhightower/envconfig"
 	user_server "github.com/library/cmd/user-svc/user-server"
-	"github.com/library/data-store"
-	"github.com/library/efk"
+	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 var (
 	dataStore *data_store.DataStore
 	env       *envConfig.Env
-	logger    *fluent.Fluent
 	srv       *user_server.Server
 	testRun   bool
 )
@@ -36,13 +34,11 @@ func main() {
 			"error": err,
 		}).Error("processing env")
 	}
-	logger = efk.NewLogger(env)
-	defer logger.Close()
 
 	dataStore = data_store.DbConnect(env, testRun)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
-	srv = user_server.NewServer(env, dataStore, logger)
+	srv = user_server.NewServer(env, dataStore)
 	err = srv.ListenAndServe("user-service", env.UserSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{

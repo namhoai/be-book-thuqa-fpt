@@ -1,6 +1,10 @@
 package main
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/kelseyhightower/envconfig"
 	user_server "github.com/library/cmd/user-svc/user-server"
 	data_store "github.com/library/data-store"
@@ -9,9 +13,6 @@ import (
 	"github.com/library/models"
 	password_hash "github.com/library/password-hash"
 	"github.com/sirupsen/logrus"
-	"net/http/httptest"
-	"os"
-	"testing"
 )
 
 var (
@@ -42,7 +43,7 @@ func TestMain(m *testing.M) {
 	}
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
-	srv = user_server.NewServer(env, dataStore, nil)
+	srv = user_server.NewServer(env, dataStore)
 	r := user_server.SetupRouter(srv, nil)
 	testServer = httptest.NewServer(r)
 	res := m.Run()
@@ -61,7 +62,6 @@ func createAdminAccount() error {
 		return err
 	}
 	admin := &models.Account{
-		Name:         "IntegrationAdmin",
 		Email:        "integration@admin.com",
 		AccountRole:  models.AdminAccount,
 		Password:     password,

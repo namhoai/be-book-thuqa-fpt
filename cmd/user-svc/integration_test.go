@@ -18,7 +18,6 @@ func TestSignupAndLogin(t *testing.T) {
 		Convey("It should register a new user", func() {
 			userEmail = "integration@user.com"
 			regReq := &models.Account{
-				Name:     "IntegrationUser",
 				Email:    userEmail,
 				Password: "password",
 			}

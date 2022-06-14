@@ -1,12 +1,13 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/jinzhu/gorm"
 	"github.com/library/models"
-	"github.com/library/password-hash"
+	password_hash "github.com/library/password-hash"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
 func TestUser(t *testing.T) {
@@ -39,7 +40,6 @@ func addAdmin() (*models.Account, error) {
 		return nil, err
 	}
 	return &models.Account{
-		Name:         "TestAdmin",
 		Email:        "unit@admin.com",
 		AccountRole:  models.AdminAccount,
 		Password:     password,

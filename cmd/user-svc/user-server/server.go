@@ -1,13 +1,13 @@
 package user_server
 
 import (
-	"github.com/fluent/fluent-logger-golang/fluent"
+	"net/http"
+
 	datastore "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 var (
@@ -18,19 +18,15 @@ var (
 type Server struct {
 	DB        datastore.DbUtil
 	Env       *envConfig.Env
-	EfkLogger *fluent.Fluent
 	TracingID string
-	EfkTag    string
 	TestRun   bool
 }
 
-func NewServer(env *envConfig.Env, db datastore.DbUtil, logger *fluent.Fluent) *Server {
+func NewServer(env *envConfig.Env, db datastore.DbUtil) *Server {
 	return &Server{
 		DB:        db,
 		Env:       env,
-		EfkLogger: logger,
 		TracingID: "",
-		EfkTag:    "user_svc.logs",
 		TestRun:   false,
 	}
 }

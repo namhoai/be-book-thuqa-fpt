@@ -1,9 +1,10 @@
 package migrations
 
 import (
+	"sync"
+
 	"github.com/jinzhu/gorm"
 	migrate "github.com/rubenv/sql-migrate"
-	"sync"
 )
 
 type dbmigrations struct {
@@ -28,4 +29,3 @@ func InitMySQL(db *gorm.DB) error {
 	}, migrate.Up)
 	return err
 }
-

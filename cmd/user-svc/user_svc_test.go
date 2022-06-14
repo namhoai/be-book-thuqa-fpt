@@ -3,17 +3,18 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/go-chi/chi"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/library/cmd/user-svc/user-server"
+	user_server "github.com/library/cmd/user-svc/user-server"
 	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"net/http"
-	"net/http/httptest"
 )
 
 var _ = Describe("User-Service", func() {
@@ -29,7 +30,7 @@ var _ = Describe("User-Service", func() {
 		Expect(err).To(BeNil())
 		testRun = true
 		dataStore = data_store.DbConnect(env, true)
-		srv = user_server.NewServer(env, dataStore, nil)
+		srv = user_server.NewServer(env, dataStore)
 		srv.TestRun = true
 		r = user_server.SetupRouter(srv, nil)
 		middleware.SetJwtSigningKey(srv.Env.JwtSigningKey)
@@ -41,7 +42,6 @@ var _ = Describe("User-Service", func() {
 			It("Should register a new user", func() {
 				userEmail = "unit@user.com"
 				regReq := &models.Account{
-					Name:     "testUser",
 					Email:    "unit@user.com",
 					Password: "password",
 				}

@@ -13,7 +13,6 @@ func SetupRouter(srv *Server) *chi.Mux {
 		r.Post("/author", srv.addAuthor)
 		r.Post("/book", srv.addBook)
 		r.Post("/subject", srv.addSubject)
-
 	})
 	r.Route("/get", func(r chi.Router) {
 		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
