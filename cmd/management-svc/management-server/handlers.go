@@ -263,7 +263,7 @@ func (srv *Server) studentReturnBook(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) UpdateBookOverdue(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) updateBookOverdue(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
@@ -282,6 +282,35 @@ func (srv *Server) UpdateBookOverdue(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = json.NewEncoder(w).Encode("Updated overdue books successfully!")
+	if err != nil {
+		handleError(w, ctx, srv, "update_book_overdue", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getBooksStudentReserved(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_book_overdue_of_student", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	userId := chi.URLParam(r, "userId")
+	userID, err := strconv.Atoi(userId)
+	if err != nil {
+		handleError(w, ctx, srv, "get_book_overdue_of_student", err, http.StatusInternalServerError)
+		return
+	}
+	history, err := srv.DB.GetBooksStudentReserved(uint(userID), "overdue")
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_book_overdue_of_student", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_book_overdue_of_student", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(history)
 	if err != nil {
 		handleError(w, ctx, srv, "update_book_overdue", err, http.StatusInternalServerError)
 	}

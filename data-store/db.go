@@ -55,6 +55,7 @@ type BookReserve interface {
 	AdminConfirmReturnBook(uint) error
 	StudentReturnBook(uint, uint, *time.Time) error
 	UpdateBookOverdue(*time.Time) error
+	GetBooksStudentReserved(uint, string) (*[]models.BookHistory, error)
 }
 
 type DeleteData interface {
