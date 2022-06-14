@@ -21,7 +21,6 @@ func setupAuthToken(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 
 	user := &models.Account{
 		BaseModel:   *&models.BaseModel{ID: 101010},
-		Name:        "testUser",
 		Email:       "integration@user.com",
 		AccountRole: "user",
 	}
@@ -43,34 +42,14 @@ func setupAuthToken(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 }
 
 func setupMockData(db *gorm.DB) error {
-	author := models.Author{
-		BaseModel:   *&models.BaseModel{ID: 101010},
-		Name:        "intTestAuthor",
-		DateOfBirth: "29 February 1600",
-	}
-	err := db.Create(&author).Error
-	if err != nil {
-		return err
-	}
-
-	subject := models.Subject{
-		BaseModel: *&models.BaseModel{ID: 101010},
-		Name:      "intTestSubject",
-	}
-	err = db.Create(&subject).Error
-	if err != nil {
-		return err
-	}
 	book := models.Book{
 		BaseModel:     *&models.BaseModel{ID: 101010},
 		Name:          "intTestBook",
-		Subject:       "intTestSubject",
-		AuthorID:      "101010",
-		AuthorName:    "intTestAuthor",
+		Author:        "intTestAuthor",
 		Available:     true,
 		AvailableDate: time.Now(),
 	}
-	err = db.Create(&book).Error
+	err := db.Create(&book).Error
 	if err != nil {
 		return err
 	}

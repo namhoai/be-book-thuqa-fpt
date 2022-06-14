@@ -30,7 +30,6 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 
 	user := &models.Account{
 		BaseModel:   *&models.BaseModel{ID: 1010},
-		Name:        "testUser",
 		Email:       "unit@user.com",
 		AccountRole: "user",
 	}
@@ -52,34 +51,14 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 }
 
 func setupTestData(db *gorm.DB) error {
-	author := models.Author{
-		BaseModel:   *&models.BaseModel{ID: 1010},
-		Name:        "testAuthor",
-		DateOfBirth: "29 February 1600",
-	}
-	err := db.Create(&author).Error
-	if err != nil {
-		return err
-	}
-
-	subject := models.Subject{
-		BaseModel: *&models.BaseModel{ID: 1010},
-		Name:      "testSubject",
-	}
-	err = db.Create(&subject).Error
-	if err != nil {
-		return err
-	}
 	book := models.Book{
 		BaseModel:     *&models.BaseModel{ID: 1010},
 		Name:          "testBook",
-		Subject:       "testSubject",
-		AuthorID:      "10101010",
-		AuthorName:    "testAuthor",
+		Author:        "testAuthor",
 		Available:     true,
 		AvailableDate: time.Now(),
 	}
-	err = db.Create(&book).Error
+	err := db.Create(&book).Error
 	if err != nil {
 		return err
 	}

@@ -1,80 +1,38 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"testing"
 
-	"github.com/library/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestBookService(t *testing.T) {
-	Convey("POST /add-author", t, func() {
-		url := fmt.Sprintf("%s/admin/add/author", testServer.URL)
-		Convey("It should create a new author", func() {
-			authorReq := &models.Author{
-				Name:        "testAuthor",
-				DateOfBirth: "29 February 1600",
-			}
-			marshalReq, err := json.Marshal(authorReq)
-			So(err, ShouldBeNil)
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(marshalReq))
-			So(err, ShouldBeNil)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+adminToken)
-			resp, err := http.DefaultClient.Do(req)
-			So(err, ShouldBeNil)
-			So(resp.StatusCode, ShouldEqual, http.StatusOK)
-			defer resp.Body.Close()
-		})
-	})
-
-	Convey("POST /add-subject", t, func() {
-		url := fmt.Sprintf("%s/admin/add/subject", testServer.URL)
-		Convey("It should create a new subject", func() {
-			subjectReq := &models.Subject{
-				Name: "testSubject",
-			}
-			marshalReq, err := json.Marshal(subjectReq)
-			So(err, ShouldBeNil)
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(marshalReq))
-			So(err, ShouldBeNil)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+adminToken)
-			resp, err := http.DefaultClient.Do(req)
-			So(err, ShouldBeNil)
-			So(resp.StatusCode, ShouldEqual, http.StatusOK)
-			defer resp.Body.Close()
-		})
-	})
-
-	Convey("POST /add-book", t, func() {
-		url := fmt.Sprintf("%s/admin/add/book", testServer.URL)
-		Convey("It should create a new book", func() {
-			authors, err := dataStore.GetAuthorsByName("testAuthor")
-			So(err, ShouldBeNil)
-			testAuthorID = strconv.Itoa(int((*authors)[0].ID))
-			bookReq := &models.Book{
-				Name:     "testBook",
-				Subject:  "testSubject",
-				AuthorID: testAuthorID,
-			}
-			marshalReq, err := json.Marshal(bookReq)
-			So(err, ShouldBeNil)
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(marshalReq))
-			So(err, ShouldBeNil)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+adminToken)
-			resp, err := http.DefaultClient.Do(req)
-			So(err, ShouldBeNil)
-			So(resp.StatusCode, ShouldEqual, http.StatusOK)
-			defer resp.Body.Close()
-		})
-	})
+	// Convey("POST /add-book", t, func() {
+	// 	url := fmt.Sprintf("%s/admin/add/book", testServer.URL)
+	// 	Convey("It should create a new book", func() {
+	// 		authors, err := dataStore.GetAuthorsByName("testAuthor")
+	// 		So(err, ShouldBeNil)
+	// 		testAuthorID = strconv.Itoa(int((*authors)[0].ID))
+	// 		bookReq := &models.Book{
+	// 			Name:     "testBook",
+	// 			Subject:  "testSubject",
+	// 			AuthorID: testAuthorID,
+	// 		}
+	// 		marshalReq, err := json.Marshal(bookReq)
+	// 		So(err, ShouldBeNil)
+	// 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(marshalReq))
+	// 		So(err, ShouldBeNil)
+	// 		req.Header.Set("Content-Type", "application/json")
+	// 		req.Header.Set("Authorization", "Bearer "+adminToken)
+	// 		resp, err := http.DefaultClient.Do(req)
+	// 		So(err, ShouldBeNil)
+	// 		So(resp.StatusCode, ShouldEqual, http.StatusOK)
+	// 		defer resp.Body.Close()
+	// 	})
+	// })
 
 	Convey("GET /get-book-by-name", t, func() {
 		url := fmt.Sprintf("%s/get/books-by-name/testBook", testServer.URL)

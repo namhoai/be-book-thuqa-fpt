@@ -1,9 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/go-chi/chi"
 	"github.com/kelseyhightower/envconfig"
 	book_server "github.com/library/cmd/book-svc/book-server"
@@ -13,9 +15,6 @@ import (
 	"github.com/library/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
 )
 
 type testData struct {
@@ -26,8 +25,8 @@ type testData struct {
 
 var _ = Describe("Book-Service", func() {
 	var (
-		r            *chi.Mux
-		adminToken   string
+		r *chi.Mux
+		// adminToken   string
 		userToken    string
 		data         *testData
 		authorCount  int
@@ -52,69 +51,30 @@ var _ = Describe("Book-Service", func() {
 		data = &testData{}
 	})
 	Describe("Handlers Test", func() {
-		Describe("Add Author", func() {
-			It("Should create a new author in DB", func() {
-				authorReq := &models.Author{
-					Name:        "testAuthor",
-					DateOfBirth: "29 February 1600",
-				}
-				marshalReq, err := json.Marshal(authorReq)
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodPost, "/admin/add/author", bytes.NewBuffer(marshalReq))
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+adminToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				data.author = authorReq.Name
-				err = dataStore.Db.Table("author").Count(&authorCount).Error
-				Expect(err).To(BeNil())
-			})
-		})
-		Describe("Add Subject", func() {
-			It("Should create a new subject in DB", func() {
-				subjectReq := &models.Subject{
-					Name: "testSubject",
-				}
-				marshalReq, err := json.Marshal(subjectReq)
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodPost, "/admin/add/subject", bytes.NewBuffer(marshalReq))
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+adminToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				data.subject = subjectReq.Name
-				err = dataStore.Db.Table("subject").Count(&subjectCount).Error
-				Expect(err).To(BeNil())
-			})
-		})
-		Describe("Add Book", func() {
-			It("Should create a new book in DB", func() {
-				author := &models.Author{}
-				err = dataStore.Db.Where("name = 'testAuthor'").First(author).Error
-				Expect(err).To(BeNil())
-				bookReq := &models.Book{
-					Name:     "testBook",
-					Subject:  "testSubject",
-					AuthorID: strconv.Itoa(int(author.ID)),
-				}
-				marshalReq, err := json.Marshal(bookReq)
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodPost, "/admin/add/book", bytes.NewBuffer(marshalReq))
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+adminToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				data.book = bookReq.Name
-				err = dataStore.Db.Table("book").Count(&bookCount).Error
-				Expect(err).To(BeNil())
-			})
-		})
+		// Describe("Add Book", func() {
+		// 	It("Should create a new book in DB", func() {
+		// 		author := &models.Author{}
+		// 		err = dataStore.Db.Where("name = 'testAuthor'").First(author).Error
+		// 		Expect(err).To(BeNil())
+		// 		bookReq := &models.Book{
+		// 			Name:     "testBook",
+		// 			Subject:  "testSubject",
+		// 			AuthorID: strconv.Itoa(int(author.ID)),
+		// 		}
+		// 		marshalReq, err := json.Marshal(bookReq)
+		// 		Expect(err).To(BeNil())
+		// 		req := httptest.NewRequest(http.MethodPost, "/admin/add/book", bytes.NewBuffer(marshalReq))
+		// 		req.Header.Set("Content-Type", "application/json")
+		// 		req.Header.Set("Authorization", "Bearer "+adminToken)
+		// 		rec := httptest.NewRecorder()
+		// 		r.ServeHTTP(rec, req)
+		// 		resp := rec.Result()
+		// 		Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
+		// 		data.book = bookReq.Name
+		// 		err = dataStore.Db.Table("book").Count(&bookCount).Error
+		// 		Expect(err).To(BeNil())
+		// 	})
+		// })
 		Describe("Get All Authors", func() {
 			It("Should return all the authors", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/authors", nil)
@@ -186,75 +146,6 @@ var _ = Describe("Book-Service", func() {
 				var books map[string]interface{}
 				err = json.NewDecoder(resp.Body).Decode(&books)
 				Expect(books["name"].(string)).To(BeEquivalentTo("testBook"))
-
-			})
-		})
-		Describe("Get Books By Author", func() {
-			It("Should return books by specific author", func() {
-				author := &models.Author{}
-				err = dataStore.Db.Where("name = 'testAuthor'").First(author).Error
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/books-by-author/%v", author.ID), nil)
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+userToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				var books []map[string]interface{}
-				err = json.NewDecoder(resp.Body).Decode(&books)
-				Expect(books[0]["name"].(string)).To(BeEquivalentTo("testBook"))
-
-			})
-		})
-		Describe("Get Books By Subject", func() {
-			It("Should return books on the specific subject", func() {
-				subject := &models.Subject{}
-				err = dataStore.Db.Where("name = 'testSubject'").First(subject).Error
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/books-by-subject/%v", subject.ID), nil)
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+userToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				var books []map[string]interface{}
-				err = json.NewDecoder(resp.Body).Decode(&books)
-				Expect(books[0]["name"].(string)).To(BeEquivalentTo("testBook"))
-
-			})
-		})
-		Describe("Get Author By Name", func() {
-			It("Should return author matching the name", func() {
-				req := httptest.NewRequest(http.MethodGet, "/get/author-by-name/testAuthor", nil)
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+userToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				var authors []map[string]interface{}
-				err = json.NewDecoder(resp.Body).Decode(&authors)
-				Expect(authors[0]["name"].(string)).To(BeEquivalentTo("testAuthor"))
-
-			})
-		})
-		Describe("Get Author By ID", func() {
-			It("Should return author matching the id", func() {
-				author := &models.Author{}
-				err = dataStore.Db.Where("name = 'testAuthor'").First(author).Error
-				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/author-by-id/%v", author.ID), nil)
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer "+userToken)
-				rec := httptest.NewRecorder()
-				r.ServeHTTP(rec, req)
-				resp := rec.Result()
-				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				var authors map[string]interface{}
-				err = json.NewDecoder(resp.Body).Decode(&authors)
-				Expect(authors["name"].(string)).To(BeEquivalentTo("testAuthor"))
 
 			})
 		})

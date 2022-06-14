@@ -16,13 +16,13 @@ func (ds *DataStore) GetBookByID(id uint) (*models.Book, error) {
 	return books, err
 }
 
-func (ds *DataStore) GetBookByBookTitle(title string) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByTitle(title string) (*[]models.Book, error) {
 	var books []models.Book
 	err := ds.Db.Where("name=?", title).Find(&books).Error
 	return &books, err
 }
 
-func (ds *DataStore) GetBookByBookISBN(isbn string) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByISBN(isbn string) (*[]models.Book, error) {
 	var books []models.Book
 	err := ds.Db.Where("isbn=?", isbn).Find(&books).Error
 	return &books, err
@@ -35,7 +35,7 @@ func (ds *DataStore) GetBookByBookISBN(isbn string) (*[]models.Book, error) {
 // 	return &books, err
 // }
 
-func (ds *DataStore) GetBookByStock(stock uint) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByStock(stock uint) (*[]models.Book, error) {
 	var books []models.Book
 	err := ds.Db.Where("stock=?", stock).Find(books).Error
 	return &books, err
@@ -53,13 +53,13 @@ func (ds *DataStore) GetBooksByYear(year string) (*[]models.Book, error) {
 	return &books, err
 }
 
-func (ds *DataStore) GetBookByEdition(edition uint) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByEdition(edition uint) (*[]models.Book, error) {
 	var books []models.Book
 	err := ds.Db.Where("edition=?", edition).Find(books).Error
 	return &books, err
 }
 
-func (ds *DataStore) GetBookByAvailabel(available bool) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByAvailable(available bool) (*[]models.Book, error) {
 	var books []models.Book
 	err := ds.Db.Where("available=?", available).Find(books).Error
 	return &books, err

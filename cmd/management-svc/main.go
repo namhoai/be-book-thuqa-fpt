@@ -2,16 +2,16 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/golang/glog"
 	"github.com/kelseyhightower/envconfig"
 	management_server "github.com/library/cmd/management-svc/management-server"
-	"github.com/library/data-store"
-	"github.com/library/efk"
+	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 var (
@@ -35,8 +35,6 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	logger = efk.NewLogger(env)
-	defer logger.Close()
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 	dataStore = data_store.DbConnect(env, testRun)

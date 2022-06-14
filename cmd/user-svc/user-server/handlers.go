@@ -90,7 +90,7 @@ func (srv *Server) login() http.HandlerFunc {
 		account, err := srv.DB.VerifyUser(*details)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
-				handleError(w, ctx, srv, "login", errors.New(fmt.Sprintf("no such %v found", details.AccountRole)), http.StatusBadRequest)
+				handleError(w, ctx, srv, "login", fmt.Errorf("no such %v found", details.AccountRole), http.StatusBadRequest)
 			} else {
 				handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			}
@@ -156,7 +156,7 @@ func (srv *Server) getUserByEmail(wr http.ResponseWriter, r *http.Request) {
 
 	users, err := srv.DB.GetUserByEmail(userEmail)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*users) == 0 {
+		if err == gorm.ErrRecordNotFound {
 			handleError(w, ctx, srv, "get_user_by_email", errors.New("no record found"), http.StatusOK)
 			return
 		}
@@ -179,6 +179,9 @@ func (srv *Server) getUserByID(wr http.ResponseWriter, r *http.Request) {
 	}
 	id := chi.URLParam(r, "id")
 	userID, err := strconv.Atoi(id)
+	if err != nil {
+		return
+	}
 	user, err := srv.DB.GetUserByID(uint(userID))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

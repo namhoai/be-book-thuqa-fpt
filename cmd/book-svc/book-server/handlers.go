@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
-	"github.com/library/efk"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
@@ -20,38 +19,6 @@ import (
 
 func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
 	return ctx.Value(middleware.ContextAuthInfo).(*models.AuthInfo)
-}
-
-func (srv *Server) addAuthor(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "add_author", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	author := &models.Author{}
-	err := json.NewDecoder(r.Body).Decode(author)
-	if err != nil {
-		handleError(w, ctx, srv, "add_author", err, http.StatusInternalServerError)
-		return
-	}
-	err = srv.DB.CreateAuthor(*author)
-	if err != nil {
-		if strings.Contains(err.Error(), "1062") {
-			handleError(w, ctx, srv, "add_author", errors.New("duplicate entry"), http.StatusBadRequest)
-			return
-		}
-		handleError(w, ctx, srv, "add_author", err, http.StatusInternalServerError)
-	}
-	logrus.WithFields(logrus.Fields{
-		"statusCode": http.StatusOK,
-	}).Info(fmt.Sprintf("new author added: %v", author.Name))
-	err = json.NewEncoder(w).Encode(author)
-	if err != nil {
-		handleError(w, ctx, srv, "adding author", err, http.StatusInternalServerError)
-		return
-	}
 }
 
 func (srv *Server) addBook(wr http.ResponseWriter, r *http.Request) {
@@ -88,38 +55,6 @@ func (srv *Server) addBook(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) addSubject(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "add_subject", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	subject := &models.Subject{}
-	err := json.NewDecoder(r.Body).Decode(subject)
-	if err != nil {
-		handleError(w, ctx, srv, "add_subject", err, http.StatusInternalServerError)
-		return
-	}
-	err = srv.DB.CreateSubject(*subject)
-	if err != nil {
-		if strings.Contains(err.Error(), "1062") {
-			handleError(w, ctx, srv, "add_subject", errors.New("duplicate entry"), http.StatusBadRequest)
-			return
-		}
-		handleError(w, ctx, srv, "add_subject", err, http.StatusInternalServerError)
-	}
-	logrus.WithFields(logrus.Fields{
-		"statusCode": http.StatusOK,
-	}).Info(fmt.Sprintf("new subject added: %v", subject.Name))
-	err = json.NewEncoder(w).Encode(subject)
-	if err != nil {
-		handleError(w, ctx, srv, "adding subject", err, http.StatusInternalServerError)
-		return
-	}
-}
-
 func (srv *Server) getBooks(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
@@ -138,30 +73,11 @@ func (srv *Server) getBooks(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooksByName(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	name := chi.URLParam(r, "name")
-	books, err := srv.DB.GetBooksByName(name)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
-			handleError(w, ctx, srv, "get_books_by_name", errors.New("no record found"), http.StatusOK)
-			return
-		}
-		handleError(w, ctx, srv, "get_books_by_name", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode(books)
-	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_name", err, http.StatusInternalServerError)
-	}
-}
-
 func (srv *Server) getBooksByTitle(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	title := chi.URLParam(r, "title")
-	books, err := srv.DB.GetBookByBookTitle(title)
+	books, err := srv.DB.GetBooksByTitle(title)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
 			handleError(w, ctx, srv, "get_books_by_title", errors.New("no record found"), http.StatusOK)
@@ -180,7 +96,7 @@ func (srv *Server) getBooksByISBN(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	isbn := chi.URLParam(r, "isbn")
-	books, err := srv.DB.GetBookByBookISBN(isbn)
+	books, err := srv.DB.GetBooksByISBN(isbn)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
 			handleError(w, ctx, srv, "get_books_by_isbn", errors.New("no record found"), http.StatusOK)
@@ -219,130 +135,125 @@ func (srv *Server) getBookByBookID(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooksByAuthorID(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByStock(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	id := chi.URLParam(r, "id")
-	authorID, err := strconv.Atoi(id)
-	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_author_id", err, http.StatusInternalServerError)
-		return
-	}
-	books, err := srv.DB.GetBooksByAuthor(uint(authorID))
+	stock := chi.URLParam(r, "stock")
+	stockInt, _ := strconv.Atoi(stock)
+	books, err := srv.DB.GetBooksByStock(uint(stockInt))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
-			handleError(w, ctx, srv, "get_books_by_author_id", errors.New("no record found"), http.StatusOK)
+			handleError(w, ctx, srv, "get_books_by_stock", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "get_books_by_author_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_stock", err, http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(w).Encode(books)
 	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_author_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_stock", err, http.StatusInternalServerError)
 	}
 }
 
-func (srv *Server) getBooksBySubjectID(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByAuthor(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	id := chi.URLParam(r, "id")
-	subjectID, err := strconv.Atoi(id)
-	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_subject_id", err, http.StatusInternalServerError)
-		return
-	}
-	books, err := srv.DB.GetBooksBySubject(uint(subjectID))
+	author := chi.URLParam(r, "author")
+	books, err := srv.DB.GetBooksByAuthor(author)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
-			handleError(w, ctx, srv, "get_books_by_subject_id", errors.New("no record found"), http.StatusOK)
+			handleError(w, ctx, srv, "get_books_by_author", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "get_books_by_subject_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_author", err, http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(w).Encode(books)
 	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_subject_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_author", err, http.StatusInternalServerError)
 	}
 }
 
-func (srv *Server) getSubjects(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByYear(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	subjects, err := srv.DB.GetSubjects()
+	year := chi.URLParam(r, "year")
+	books, err := srv.DB.GetBooksByYear(year)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*subjects) == 0 {
-			handleError(w, ctx, srv, "get_subjects", errors.New("no record found"), http.StatusOK)
-		} else {
-			handleError(w, ctx, srv, "get_subjects", err, http.StatusInternalServerError)
-		}
-		return
-	}
-	err = json.NewEncoder(w).Encode(subjects)
-	if err != nil {
-		handleError(w, ctx, srv, "get_subjects", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) getAuthors(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	authors, err := srv.DB.GetAuthors()
-	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*authors) == 0 {
-			handleError(w, ctx, srv, "get_authors", errors.New("no record found"), http.StatusOK)
-		} else {
-			handleError(w, ctx, srv, "get_authors", err, http.StatusInternalServerError)
-		}
-		return
-	}
-	err = json.NewEncoder(w).Encode(authors)
-	if err != nil {
-		handleError(w, ctx, srv, "get_authors", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) getAuthorByName(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	name := chi.URLParam(r, "name")
-	authors, err := srv.DB.GetAuthorsByName(name)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*authors) == 0 {
-			handleError(w, ctx, srv, "get_author_by_name", errors.New("no record found"), http.StatusOK)
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_books_by_year", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "get_author_by_name", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_year", err, http.StatusInternalServerError)
 		return
 	}
-	err = json.NewEncoder(w).Encode(authors)
+	err = json.NewEncoder(w).Encode(books)
 	if err != nil {
-		handleError(w, ctx, srv, "get_author_by_name", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_year", err, http.StatusInternalServerError)
 	}
 }
 
-func (srv *Server) getAuthorByID(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByEdition(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	id := chi.URLParam(r, "id")
-	authorID, err := strconv.Atoi(id)
+	edition := chi.URLParam(r, "edition")
+	editionInt, _ := strconv.Atoi(edition)
+	books, err := srv.DB.GetBooksByEdition(uint(editionInt))
 	if err != nil {
-		handleError(w, ctx, srv, "get_author_by_id", err, http.StatusInternalServerError)
-		return
-	}
-	author, err := srv.DB.GetAuthorByID(uint(authorID))
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			handleError(w, ctx, srv, "get_author_by_id", errors.New("no record found"), http.StatusOK)
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_books_by_edition", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "get_author_by_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_edition", err, http.StatusInternalServerError)
 		return
 	}
-	err = json.NewEncoder(w).Encode(author)
+	err = json.NewEncoder(w).Encode(books)
 	if err != nil {
-		handleError(w, ctx, srv, "get_author_by_id", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_books_by_edition", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getBooksByAvailable(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	available := chi.URLParam(r, "available")
+	if available == "false" {
+		return
+	}
+	books, err := srv.DB.GetBooksByAvailable(true)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_books_by_available", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_books_by_available", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(books)
+	if err != nil {
+		handleError(w, ctx, srv, "get_books_by_available", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getBooksByBorrow(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	available := chi.URLParam(r, "available")
+	if available == "true" {
+		return
+	}
+	books, err := srv.DB.GetBooksByAvailable(false)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_books_by_borrow", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_books_by_borrow", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(books)
+	if err != nil {
+		handleError(w, ctx, srv, "get_books_by_borrow", err, http.StatusInternalServerError)
 	}
 }
 
@@ -355,7 +266,6 @@ func (srv *Server) health() http.HandlerFunc {
 func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
-		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
 	}
 	http.Error(w, err.Error(), statusCode)
 

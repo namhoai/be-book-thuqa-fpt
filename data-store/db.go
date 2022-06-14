@@ -31,15 +31,15 @@ type InsertData interface {
 
 type GetData interface {
 	GetBooks() (*[]models.Book, error)
-	GetBookByBookTitle(string) (*[]models.Book, error)
-	GetBookByBookISBN(string) (*[]models.Book, error)
+	GetBooksByTitle(string) (*[]models.Book, error)
+	GetBooksByISBN(string) (*[]models.Book, error)
 	GetBookByID(uint) (*models.Book, error)
 	GetBooksByAuthor(string) (*[]models.Book, error)
 	GetBooksByStock(uint) (*[]models.Book, error)
 	GetBooksByYear(string) (*[]models.Book, error)
-	GetBookByEdition(uint) (*[]models.Book, error)
-	GetBookByAvailabel(bool) (*[]models.Book, error)
-	GetUserByEmail(string) (*[]models.Account, error)
+	GetBooksByEdition(uint) (*[]models.Book, error)
+	GetBooksByAvailable(bool) (*[]models.Book, error)
+	GetUserByEmail(string) (*models.Account, error)
 	GetUserByID(uint) (*models.Account, error)
 	GetUsers() (*[]models.Account, error)
 }
@@ -57,7 +57,7 @@ type DeleteData interface {
 }
 
 type UpdateData interface {
-	UpdateBook() error
+	UpdateBook(uint, string, string, uint, string, string, uint, string, string, string) error
 }
 
 var retryAttempts = 0

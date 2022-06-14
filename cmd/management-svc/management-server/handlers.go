@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
-	"github.com/library/efk"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
@@ -189,7 +188,7 @@ func (srv *Server) deleteBook(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) updateNameOfBook(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) updateBook(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
@@ -198,104 +197,27 @@ func (srv *Server) updateNameOfBook(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := chi.URLParam(r, "id")
-	bookID, err := strconv.Atoi(id)
+	bookID, _ := strconv.Atoi(id)
 	bookName := r.FormValue("name")
-	err = srv.DB.UpdateNameOfBook(uint(bookID), bookName)
-	if err != nil {
-		handleError(w, ctx, srv, "update_name_of_book", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode("Book updated successfully!")
-	if err != nil {
-		handleError(w, ctx, srv, "update_name_of_book", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) updateSubjectOfBook(wr http.ResponseWriter, r *http.Request) {
-	w := middleware.NewLogResponseWriter(wr)
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "update_subject_of_book", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	subjectName := r.FormValue("subject")
-	id := chi.URLParam(r, "id")
-	bookID, err := strconv.Atoi(id)
-	err = srv.DB.UpdateSubjectOfBook(uint(bookID), subjectName)
-	if err != nil {
-		handleError(w, ctx, srv, "update_subject_of_book", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode("Book updated successfully!")
-	if err != nil {
-		handleError(w, ctx, srv, "update_subject_of_book", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) updateAuthorOfBook(wr http.ResponseWriter, r *http.Request) {
-	w := middleware.NewLogResponseWriter(wr)
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "update_author_of_book", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	authorId := r.FormValue("authorId")
-	id := chi.URLParam(r, "id")
-	bookID, err := strconv.Atoi(id)
-	err = srv.DB.UpdateAuthorOfBook(uint(bookID), authorId)
-	if err != nil {
-		handleError(w, ctx, srv, "update_author_of_book", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode("Book updated successfully!")
-	if err != nil {
-		handleError(w, ctx, srv, "update_author_of_book", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) updateTitleOfBook(wr http.ResponseWriter, r *http.Request) {
-	w := middleware.NewLogResponseWriter(wr)
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "update_title_of_book", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	title := r.FormValue("title")
-	id := chi.URLParam(r, "id")
-	bookID, err := strconv.Atoi(id)
-	err = srv.DB.UpdateTitleOfBook(uint(bookID), title)
-	if err != nil {
-		handleError(w, ctx, srv, "update_title_of_book", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode("Book updated successfully!")
-	if err != nil {
-		handleError(w, ctx, srv, "update_title_of_book", err, http.StatusInternalServerError)
-	}
-}
-
-func (srv *Server) updateISBNOfBook(wr http.ResponseWriter, r *http.Request) {
-	w := middleware.NewLogResponseWriter(wr)
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "update_isbn_of_book", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
 	isbn := r.FormValue("isbn")
-	id := chi.URLParam(r, "id")
-	bookID, err := strconv.Atoi(id)
-	err = srv.DB.UpdateISBNOfBook(uint(bookID), isbn)
+	stock := r.FormValue("stock")
+	stockInt, _ := strconv.Atoi(stock)
+	author := r.FormValue("author")
+	year := r.FormValue("year")
+	edition := r.FormValue("edition")
+	editionInt, _ := strconv.Atoi(edition)
+	cover := r.FormValue("cover")
+	abstract := r.FormValue("abstract")
+	category := r.FormValue("category")
+
+	err := srv.DB.UpdateBook(uint(bookID), bookName, isbn, uint(stockInt), author, year, uint(editionInt), cover, abstract, category)
 	if err != nil {
-		handleError(w, ctx, srv, "update_isbn_of_book", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "update_name_of_book", err, http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(w).Encode("Book updated successfully!")
 	if err != nil {
-		handleError(w, ctx, srv, "update_isbn_of_book", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "update_name_of_book", err, http.StatusInternalServerError)
 	}
 }
 
@@ -308,7 +230,6 @@ func (srv *Server) health() http.HandlerFunc {
 func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
-		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
 	}
 	http.Error(w, err.Error(), statusCode)
 
