@@ -18,7 +18,7 @@ type DataStore struct {
 type DbUtil interface {
 	InsertData
 	GetData
-	BookIssue
+	BookReserve
 	DeleteData
 	UpdateData
 	VerifyUser(models.LoginDetails) (*models.Account, error)
@@ -42,14 +42,19 @@ type GetData interface {
 	GetUserByEmail(string) (*models.Account, error)
 	GetUserByID(uint) (*models.Account, error)
 	GetUsers() (*[]models.Account, error)
+	GetAllBooksReturnByUser() (*[]models.StudentReturnBook, error)
+	GetBooksReturnByUser(uint) (*models.StudentReturnBook, error)
 }
 
-type BookIssue interface {
+type BookReserve interface {
 	GetHistory(uint) (*[]models.BookHistory, error)
+	GetBooksbyStatus(string) (*[]models.BookHistory, error)
 	GetCompleteHistory() (*[]models.BookHistory, error)
 	CheckAvailability(uint) (bool, error)
-	IssueBook(uint, uint) error
-	ReturnBook(uint) error
+	ReserveBook(uint, uint, *time.Time, *time.Time) error
+	AdminConfirmReturnBook(uint) error
+	StudentReturnBook(uint, uint, *time.Time) error
+	UpdateBookOverdue(*time.Time) error
 }
 
 type DeleteData interface {

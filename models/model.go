@@ -50,15 +50,37 @@ func (Book) TableName() string {
 }
 
 type BookHistory struct {
-	UserID     uint       `json:"userId"`
-	BookID     uint       `json:"bookId"`
-	IssueDate  *time.Time `json:"issueDate"`
-	ReturnDate *time.Time `json:"returnDate"`
-	Returned   bool       `json:"returned"`
+	UserID       uint       `json:"userId"`
+	BookID       uint       `json:"bookId"`
+	ReservedDate *time.Time `json:"reservedDate"`
+	ReturnDate   *time.Time `json:"returnDate"`
+	Status       string     `json:"status"`
 }
 
 func (BookHistory) TableName() string {
 	return "book_history"
+}
+
+type BookQueue struct {
+	UserID       uint       `json:"userId"`
+	BookID       uint       `json:"bookId"`
+	ReservedDate *time.Time `json:"reservedDate"`
+	ReturnDate   *time.Time `json:"returnDate"`
+}
+
+func (BookQueue) TableName() string {
+	return "book_queue"
+}
+
+type StudentReturnBook struct {
+	UserID       uint       `json:"userId"`
+	BookID       uint       `json:"bookId"`
+	ReservedDate *time.Time `json:"reservedDate"`
+	ReturnDate   *time.Time `json:"returnDate"`
+}
+
+func (StudentReturnBook) TableName() string {
+	return "student_return_book"
 }
 
 type Response struct {

@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
@@ -70,6 +72,75 @@ func (srv *Server) getHistory(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (srv *Server) getBorrowHistory(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_borrowed_history", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	history, err := srv.DB.GetBooksbyStatus("borrowed")
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_borrowed_history", errors.New("no record found"), http.StatusOK)
+		} else {
+			handleError(w, ctx, srv, "get_borrowed_history", err, http.StatusInternalServerError)
+		}
+		return
+	}
+	err = json.NewEncoder(w).Encode(history)
+	if err != nil {
+		handleError(w, ctx, srv, "get_borrowed_history", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getReturnHistory(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_returned_history", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	history, err := srv.DB.GetBooksbyStatus("returned")
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_returned_history", errors.New("no record found"), http.StatusOK)
+		} else {
+			handleError(w, ctx, srv, "get_returned_history", err, http.StatusInternalServerError)
+		}
+		return
+	}
+	err = json.NewEncoder(w).Encode(history)
+	if err != nil {
+		handleError(w, ctx, srv, "get_returned_history", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getOverdueHistory(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_overdue_history", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	history, err := srv.DB.GetBooksbyStatus("overdue")
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_overdue_history", errors.New("no record found"), http.StatusOK)
+		} else {
+			handleError(w, ctx, srv, "get_overdue_history", err, http.StatusInternalServerError)
+		}
+		return
+	}
+	err = json.NewEncoder(w).Encode(history)
+	if err != nil {
+		handleError(w, ctx, srv, "get_overdue_history", err, http.StatusInternalServerError)
+	}
+}
+
 func (srv *Server) checkAvailability(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
@@ -94,43 +165,45 @@ func (srv *Server) checkAvailability(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) issueBook(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) reserveBook(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "issue_book", errors.New("permission denied"), http.StatusUnauthorized)
+	id := chi.URLParam(r, "id")
+	bookID, err := strconv.Atoi(id)
+	user := r.FormValue("userId")
+	reservedDateString := r.FormValue("reservedDate")
+	returnDateString := r.FormValue("returnDate")
+	reservedDate, err := time.Parse("2006-01-02", reservedDateString)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	book := r.FormValue("bookId")
-	user := r.FormValue("userId")
-	bookID, err := strconv.Atoi(book)
+	returnDate, err := time.Parse("2006-01-02", returnDateString)
 	if err != nil {
-		handleError(w, ctx, srv, "issue_book", err, http.StatusInternalServerError)
+		fmt.Println(err)
 		return
 	}
 	userID, err := strconv.Atoi(user)
 	if err != nil {
-		handleError(w, ctx, srv, "issue_book", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "reserve_book", err, http.StatusInternalServerError)
 		return
 	}
-
-	err = srv.DB.IssueBook(uint(bookID), uint(userID))
+	err = srv.DB.ReserveBook(uint(bookID), uint(userID), &reservedDate, &returnDate)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			handleError(w, ctx, srv, "issue_book", errors.New("no record found"), http.StatusOK)
+			handleError(w, ctx, srv, "reserve_book", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "issue_book", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "reserve_book", err, http.StatusInternalServerError)
 		return
 	}
-	err = json.NewEncoder(w).Encode("Book issued successfully!")
+	err = json.NewEncoder(w).Encode("Book reserved successfully!")
 	if err != nil {
-		handleError(w, ctx, srv, "issue_book", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "reserve_book", err, http.StatusInternalServerError)
 	}
 }
 
-func (srv *Server) returnBook(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) adminConfirmReturnBook(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
@@ -144,7 +217,7 @@ func (srv *Server) returnBook(wr http.ResponseWriter, r *http.Request) {
 		handleError(w, ctx, srv, "return_book", err, http.StatusInternalServerError)
 		return
 	}
-	err = srv.DB.ReturnBook(uint(bookID))
+	err = srv.DB.AdminConfirmReturnBook(uint(bookID))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			handleError(w, ctx, srv, "return_book", errors.New("no record found"), http.StatusOK)
@@ -156,6 +229,61 @@ func (srv *Server) returnBook(wr http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode("Book return processed successfully!")
 	if err != nil {
 		handleError(w, ctx, srv, "return_book", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) studentReturnBook(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	user := r.FormValue("userId")
+	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		handleError(w, ctx, srv, "student_return_book", err, http.StatusInternalServerError)
+		return
+	}
+	userID, err := strconv.Atoi(user)
+	if err != nil {
+		handleError(w, ctx, srv, "student_return_book", err, http.StatusInternalServerError)
+		return
+	}
+	returnDate := time.Now()
+	err = srv.DB.StudentReturnBook(uint(bookID), uint(userID), &returnDate)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "student_return_book", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "student_return_book", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode("Wait until the return is accepted!")
+	if err != nil {
+		handleError(w, ctx, srv, "student_return_book", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) UpdateBookOverdue(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "update_book_overdue", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	currentTime := time.Now()
+	err := srv.DB.UpdateBookOverdue(&currentTime)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "update_book_overdue", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "update_book_overdue", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode("Updated overdue books successfully!")
+	if err != nil {
+		handleError(w, ctx, srv, "update_book_overdue", err, http.StatusInternalServerError)
 	}
 }
 

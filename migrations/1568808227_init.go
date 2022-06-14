@@ -15,6 +15,7 @@ func init() {
 			  email varchar(255) NOT NULL,
 			  account_role varchar(255) NOT NULL,
 			  password_hash varchar(255) NOT NULL,
+			  status varchar(255),
 			  PRIMARY KEY (id),
 			  UNIQUE KEY id (id),
 			  UNIQUE KEY email (email)
@@ -37,6 +38,7 @@ func init() {
 			  category varchar(255) NOT NULL,
 			  available bool DEFAULT true,
 			  available_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			  image text,
 			  PRIMARY KEY (id),
 			  UNIQUE KEY id (id)
 			);

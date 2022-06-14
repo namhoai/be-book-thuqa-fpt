@@ -83,3 +83,15 @@ func (ds *DataStore) GetUsers() (*[]models.Account, error) {
 	err := ds.Db.Raw(query).Scan(&users).Error
 	return &users, err
 }
+
+func (ds *DataStore) GetAllBooksReturnByUser() (*[]models.StudentReturnBook, error) {
+	var books []models.StudentReturnBook
+	err := ds.Db.Find(&books).Error
+	return &books, err
+}
+
+func (ds *DataStore) GetBooksReturnByUser(bookId uint) (*models.StudentReturnBook, error) {
+	book := &models.StudentReturnBook{}
+	err := ds.Db.Where("id = ?", bookId).Find(book).Error
+	return book, err
+}
