@@ -26,24 +26,19 @@ type DbUtil interface {
 
 type InsertData interface {
 	CreateUserAccount(models.Account) error
-	CreateAuthor(author models.Author) error
 	CreateBook(book models.Book) error
-	CreateSubject(book models.Subject) error
 }
 
 type GetData interface {
-	GetSubjects() (*[]models.Subject, error)
-	GetAuthors() (*[]models.Author, error)
 	GetBooks() (*[]models.Book, error)
-	GetBooksByName(string) (*[]models.Book, error)
 	GetBookByBookTitle(string) (*[]models.Book, error)
 	GetBookByBookISBN(string) (*[]models.Book, error)
 	GetBookByID(uint) (*models.Book, error)
-	GetBooksByAuthor(uint) (*[]models.Book, error)
-	GetBooksBySubject(uint) (*[]models.Book, error)
-	GetAuthorsByName(string) (*[]models.Author, error)
-	GetAuthorByID(uint) (*models.Author, error)
-	GetUserByName(string) (*[]models.Account, error)
+	GetBooksByAuthor(string) (*[]models.Book, error)
+	GetBooksByStock(uint) (*[]models.Book, error)
+	GetBooksByYear(string) (*[]models.Book, error)
+	GetBookByEdition(uint) (*[]models.Book, error)
+	GetBookByAvailabel(bool) (*[]models.Book, error)
 	GetUserByEmail(string) (*[]models.Account, error)
 	GetUserByID(uint) (*models.Account, error)
 	GetUsers() (*[]models.Account, error)
@@ -62,11 +57,7 @@ type DeleteData interface {
 }
 
 type UpdateData interface {
-	UpdateNameOfBook(uint, string) error
-	UpdateSubjectOfBook(uint, string) error
-	UpdateAuthorOfBook(uint, string) error
-	UpdateTitleOfBook(uint, string) error
-	UpdateISBNOfBook(uint, string) error
+	UpdateBook() error
 }
 
 var retryAttempts = 0

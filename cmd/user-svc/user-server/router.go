@@ -18,7 +18,6 @@ func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 	r.Route("/get", func(r chi.Router) {
 		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
 		r.Get("/users", srv.getUsers)
-		r.Get("/users-by-name/{name}", srv.getUserByName)
 		r.Get("/users-by-email/{email}", srv.getUserByEmail)
 		r.Get("/users-by-id/{id}", srv.getUserByID)
 	})

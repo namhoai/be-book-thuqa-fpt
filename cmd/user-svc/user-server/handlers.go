@@ -144,30 +144,6 @@ func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
 	return ctx.Value(middleware.ContextAuthInfo).(*models.AuthInfo)
 }
 
-func (srv *Server) getUserByName(wr http.ResponseWriter, r *http.Request) {
-	w := &middleware.LogResponseWriter{ResponseWriter: wr}
-	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "get_user_by_name", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	userName := chi.URLParam(r, "name")
-	users, err := srv.DB.GetUserByName(userName)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound || len(*users) == 0 {
-			handleError(w, ctx, srv, "get_user_by_name", errors.New("no record found"), http.StatusOK)
-			return
-		}
-		handleError(w, ctx, srv, "get_user_by_name", err, http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode(users)
-	if err != nil {
-		handleError(w, ctx, srv, "get_user_by_name", err, http.StatusInternalServerError)
-	}
-}
-
 func (srv *Server) getUserByEmail(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
