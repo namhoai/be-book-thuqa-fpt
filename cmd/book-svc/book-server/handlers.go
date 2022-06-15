@@ -309,7 +309,6 @@ func (srv *Server) downloadImageFromS3(wr http.ResponseWriter, r *http.Request) 
 		S3ForcePathStyle: aws.Bool(true),
 	}
 	newSession := session.New(s3Config)
-
 	file, err := os.Create(downloadFilePath)
 	if err != nil {
 		fmt.Println(err)
