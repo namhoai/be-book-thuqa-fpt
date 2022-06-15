@@ -396,3 +396,11 @@ func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Serv
 		"error":      err,
 	}).Error(task)
 }
+
+func (srv *Server) getAllBooksStudentReturned(wr http.ResponseWriter, r *http.Request) {
+
+}
+
+func (srv *Server) getBooksStudentReturned(wr http.ResponseWriter, r *http.Request) {
+
+}

@@ -117,3 +117,16 @@ func (ds *DataStore) GetBooksStudentReserved(userID uint, status string) (*[]mod
 	err := ds.Db.Raw(query, userID, status).Scan(&history).Error
 	return &history, err
 }
+
+func (ds *DataStore) GetAllBooksStudentReturned() (*[]models.StudentReturnBook, error) {
+	var books []models.StudentReturnBook
+	err := ds.Db.Find(&books).Error
+	return &books, err
+}
+
+func (ds *DataStore) GetBooksStudentReturned(bookID uint) (*[]models.StudentReturnBook, error) {
+	var returnBook []models.StudentReturnBook
+	query := `select * from student_return_book where book_id = ?`
+	err := ds.Db.Raw(query, bookID).Scan(&returnBook).Error
+	return &returnBook, err
+}

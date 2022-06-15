@@ -23,6 +23,7 @@ type Account struct {
 	Email        string `json:"email"`
 	AccountRole  string `json:"accountRole"`
 	Password     string `gorm:"-" json:"password"`
+	Status       string `json:"status"`
 	PasswordHash string `json:"-"`
 }
 
@@ -41,6 +42,7 @@ type Book struct {
 	Cover         string    `json:"cover"`
 	Abstract      string    `json:"abstract"`
 	Category      string    `json:"category"`
+	Image         string    `json:"image"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
 }

@@ -216,10 +216,6 @@ func (srv *Server) getBooksByEdition(wr http.ResponseWriter, r *http.Request) {
 func (srv *Server) getBooksByAvailable(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	available := chi.URLParam(r, "available")
-	if available == "false" {
-		return
-	}
 	books, err := srv.DB.GetBooksByAvailable(true)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
@@ -238,10 +234,6 @@ func (srv *Server) getBooksByAvailable(wr http.ResponseWriter, r *http.Request) 
 func (srv *Server) getBooksByBorrow(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	available := chi.URLParam(r, "available")
-	if available == "true" {
-		return
-	}
 	books, err := srv.DB.GetBooksByAvailable(false)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {

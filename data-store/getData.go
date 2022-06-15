@@ -37,7 +37,7 @@ func (ds *DataStore) GetBooksByISBN(isbn string) (*[]models.Book, error) {
 
 func (ds *DataStore) GetBooksByStock(stock uint) (*[]models.Book, error) {
 	var books []models.Book
-	err := ds.Db.Where("stock=?", stock).Find(books).Error
+	err := ds.Db.Where("stock=?", stock).Find(&books).Error
 	return &books, err
 }
 
@@ -55,19 +55,19 @@ func (ds *DataStore) GetBooksByYear(year string) (*[]models.Book, error) {
 
 func (ds *DataStore) GetBooksByEdition(edition uint) (*[]models.Book, error) {
 	var books []models.Book
-	err := ds.Db.Where("edition=?", edition).Find(books).Error
+	err := ds.Db.Where("edition=?", edition).Find(&books).Error
 	return &books, err
 }
 
 func (ds *DataStore) GetBooksByAvailable(available bool) (*[]models.Book, error) {
 	var books []models.Book
-	err := ds.Db.Where("available=?", available).Find(books).Error
+	err := ds.Db.Where("available=?", available).Find(&books).Error
 	return &books, err
 }
 
 func (ds *DataStore) GetUserByEmail(email string) (*models.Account, error) {
 	user := &models.Account{}
-	err := ds.Db.Where("email=?", email).Find(user).Error
+	err := ds.Db.Where("email=? and account_role='user'", email).Find(user).Error
 	return user, err
 }
 
@@ -79,7 +79,7 @@ func (ds *DataStore) GetUserByID(id uint) (*models.Account, error) {
 
 func (ds *DataStore) GetUsers() (*[]models.Account, error) {
 	var users []models.Account
-	query := `select * from account`
+	query := `select * from account where account_role="user"`
 	err := ds.Db.Raw(query).Scan(&users).Error
 	return &users, err
 }

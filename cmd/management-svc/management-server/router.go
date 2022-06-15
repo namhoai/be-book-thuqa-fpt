@@ -16,6 +16,8 @@ func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 		r.Get("/borrowed-history", srv.getBorrowHistory)
 		r.Get("/returned-history", srv.getReturnHistory)
 		r.Get("/overdue-history", srv.getOverdueHistory)
+		r.Get("/student-return-books", srv.getAllBooksStudentReturned)
+		r.Get("/student-return-book/{id}", srv.getBooksStudentReturned)
 		r.Get("/confirm-return-book", srv.adminConfirmReturnBook)
 		r.Get("/get-overdue-book-student/{userId}", srv.adminConfirmReturnBook)
 		r.Delete("/delete-book/{id}", srv.deleteBook)
