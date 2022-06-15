@@ -12,6 +12,11 @@ func SetupRouter(srv *Server) *chi.Mux {
 		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
 		r.Post("/book", srv.addBook)
 	})
+	r.Route("/admin", func(r chi.Router) {
+		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
+		r.Post("/updoad-image", srv.uploadImageToS3)
+		r.Post("/download-image/{path}", srv.downloadImageFromS3)
+	})
 	r.Route("/get", func(r chi.Router) {
 		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
 		r.Get("/books", srv.getBooks)

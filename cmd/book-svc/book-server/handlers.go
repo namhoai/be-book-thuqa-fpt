@@ -1,11 +1,13 @@
 package book_server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +17,19 @@ import (
 	"github.com/library/middleware"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+)
+
+const (
+	AWS_S3_BUCKET = "m-fke-test"
+	S3_ID         = "122b6c03649fc4b36723"
+	S3_SECRET     = "FJm7hzvP63vaW4d0FOBeqMGA5HIDZSluzKieO4cx"
+	S3_URL        = "https://s3-sgn09.fptcloud.com"
 )
 
 func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
@@ -247,6 +262,97 @@ func (srv *Server) getBooksByBorrow(wr http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleError(w, ctx, srv, "get_books_by_borrow", err, http.StatusInternalServerError)
 	}
+}
+
+func (srv *Server) uploadImageToS3(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "upload_file_path", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	imagePath := r.FormValue("image_path")
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(S3_ID, S3_SECRET, ""),
+		Endpoint:         aws.String(S3_URL),
+		Region:           aws.String("us-east-1"),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	newSession := session.New(s3Config)
+
+	err := uploadFile(newSession, imagePath)
+	if err != nil {
+		handleError(w, ctx, srv, "uploading image to S3", err, http.StatusInternalServerError)
+	}
+	err = json.NewEncoder(w).Encode(imagePath)
+	if err != nil {
+		handleError(w, ctx, srv, "uploading image to S3", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) downloadImageFromS3(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "download_file_path", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	downloadFilePath := r.FormValue("download_file_path")
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(S3_ID, S3_SECRET, ""),
+		Endpoint:         aws.String(S3_URL),
+		Region:           aws.String("us-east-1"),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	newSession := session.New(s3Config)
+
+	file, err := os.Create(downloadFilePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+	// sess, _ := session.NewSession(&aws.Config{Region: aws.String("us-east-1")})
+	downloader := s3manager.NewDownloader(newSession)
+	numBytes, err := downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: aws.String(AWS_S3_BUCKET),
+			Key:    aws.String(downloadFilePath),
+		})
+	if err != nil {
+		handleError(w, ctx, srv, "downloading image from S3", err, http.StatusInternalServerError)
+	}
+
+	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
+}
+
+func uploadFile(session *session.Session, uploadFileDir string) error {
+
+	upFile, err := os.Open(uploadFileDir)
+	if err != nil {
+		return err
+	}
+	defer upFile.Close()
+
+	upFileInfo, _ := upFile.Stat()
+	var fileSize int64 = upFileInfo.Size()
+	fileBuffer := make([]byte, fileSize)
+	upFile.Read(fileBuffer)
+
+	_, err = s3.New(session).PutObject(&s3.PutObjectInput{
+		Bucket:               aws.String(AWS_S3_BUCKET),
+		Key:                  aws.String(uploadFileDir),
+		ACL:                  aws.String("private"),
+		Body:                 bytes.NewReader(fileBuffer),
+		ContentLength:        aws.Int64(fileSize),
+		ContentType:          aws.String(http.DetectContentType(fileBuffer)),
+		ContentDisposition:   aws.String("attachment"),
+		ServerSideEncryption: aws.String("AES256"),
+	})
+	return err
 }
 
 func (srv *Server) health() http.HandlerFunc {
