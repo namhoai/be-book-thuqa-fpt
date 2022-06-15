@@ -117,10 +117,17 @@ func (ds *DataStore) UpdateBookOverdue(currentTime *time.Time) error {
 	}).Error
 }
 
-func (ds *DataStore) GetBooksStudentReserved(userID uint, status string) (*[]models.BookHistory, error) {
+func (ds *DataStore) GetBooksStudentOverdue(userID uint, status string) (*[]models.BookHistory, error) {
 	var history []models.BookHistory
-	query := `select * from book_history where id = ? and status = ?`
+	query := `select * from book_history where user_id = ? and status = ?`
 	err := ds.Db.Raw(query, userID, status).Scan(&history).Error
+	return &history, err
+}
+
+func (ds *DataStore) GetBooksStudentReserved(userID uint) (*[]models.BookHistory, error) {
+	var history []models.BookHistory
+	query := `select * from book_history where user_id = ?`
+	err := ds.Db.Raw(query, userID).Scan(&history).Error
 	return &history, err
 }
 
