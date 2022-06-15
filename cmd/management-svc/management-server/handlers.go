@@ -170,6 +170,9 @@ func (srv *Server) reserveBook(wr http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		return
+	}
 	user := r.FormValue("userId")
 	reservedDateString := r.FormValue("reservedDate")
 	returnDateString := r.FormValue("returnDate")
@@ -229,6 +232,11 @@ func (srv *Server) adminConfirmReturnBook(wr http.ResponseWriter, r *http.Reques
 	err = json.NewEncoder(w).Encode("Book return processed successfully!")
 	if err != nil {
 		handleError(w, ctx, srv, "return_book", err, http.StatusInternalServerError)
+	}
+	err = srv.DB.DeleteRecordStudentReturnBook(uint(bookID))
+	if err != nil {
+		handleError(w, ctx, srv, "return_book", err, http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -398,9 +406,51 @@ func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Serv
 }
 
 func (srv *Server) getAllBooksStudentReturned(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_all_book_student_return", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
 
+	bookReturnByStudent, err := srv.DB.GetAllBooksStudentReturned()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_all_book_student_return", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_all_book_student_return", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(bookReturnByStudent)
+	if err != nil {
+		handleError(w, ctx, srv, "get_all_book_student_return", err, http.StatusInternalServerError)
+	}
 }
 
 func (srv *Server) getBooksStudentReturned(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
+	ctx := r.Context()
+	authInfo := GetAuthInfoFromContext(ctx)
+	if authInfo.Role != models.AdminAccount {
+		handleError(w, ctx, srv, "get_all_book_student_return", errors.New("permission denied"), http.StatusUnauthorized)
+		return
+	}
+	id := chi.URLParam(r, "id")
+	bookID, _ := strconv.Atoi(id)
 
+	bookReturnByStudent, err := srv.DB.GetBooksStudentReturned(uint(bookID))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			handleError(w, ctx, srv, "get_all_book_student_return", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_all_book_student_return", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(bookReturnByStudent)
+	if err != nil {
+		handleError(w, ctx, srv, "get_all_book_student_return", err, http.StatusInternalServerError)
+	}
 }

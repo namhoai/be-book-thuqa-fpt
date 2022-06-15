@@ -62,6 +62,7 @@ type BookReserve interface {
 
 type DeleteData interface {
 	DeleteBook(uint) error
+	DeleteRecordStudentReturnBook(uint) error
 }
 
 type UpdateData interface {
