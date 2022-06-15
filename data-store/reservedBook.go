@@ -88,11 +88,17 @@ func (ds *DataStore) AdminConfirmReturnBook(bookID uint) error {
 	}).Error
 }
 
-func (ds *DataStore) StudentReturnBook(bookID, userID uint, returnDate *time.Time) error {
-	studentReturnBook := &models.StudentReturnBook{}
-	err := ds.Db.Model(studentReturnBook).Where("bookId = ? and userId", bookID, userID).Updates(map[string]interface{}{
-		"returnDate": returnDate,
-	}).Error
+func (ds *DataStore) StudentReturnBook(bookID, userID uint, reservedDate, returnDate *time.Time) error {
+	studentReturnBook := &models.StudentReturnBook{
+		UserID:       userID,
+		BookID:       bookID,
+		ReservedDate: reservedDate,
+		ReturnDate:   returnDate,
+	}
+	// err := ds.Db.Model(studentReturnBook).Where("book_id = ? and user_id = ?", bookID, userID).Updates(map[string]interface{}{
+	// 	"returnDate": returnDate,
+	// }).Error
+	err := ds.Db.Create(studentReturnBook).Error
 	if err != nil {
 		return err
 	}
@@ -101,7 +107,7 @@ func (ds *DataStore) StudentReturnBook(bookID, userID uint, returnDate *time.Tim
 
 func (ds *DataStore) UpdateBookOverdue(currentTime *time.Time) error {
 	var books []models.BookHistory
-	query := `select * from book where DATE(returnDate) < ?`
+	query := `select * from book_history where DATE(return_date) < ?`
 	err := ds.Db.Raw(query, currentTime).Scan(&books).Error
 	if err != nil {
 		return nil

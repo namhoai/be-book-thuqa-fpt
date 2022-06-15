@@ -256,7 +256,9 @@ func (srv *Server) studentReturnBook(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 	returnDate := time.Now()
-	err = srv.DB.StudentReturnBook(uint(bookID), uint(userID), &returnDate)
+	books, err := srv.DB.GetHistory(uint(bookID))
+	reservedDate := (*books)[0].ReservedDate
+	err = srv.DB.StudentReturnBook(uint(bookID), uint(userID), reservedDate, &returnDate)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			handleError(w, ctx, srv, "student_return_book", errors.New("no record found"), http.StatusOK)

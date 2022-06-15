@@ -42,7 +42,6 @@ type Book struct {
 	Cover         string    `json:"cover"`
 	Abstract      string    `json:"abstract"`
 	Category      string    `json:"category"`
-	Image         string    `json:"image"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
 }

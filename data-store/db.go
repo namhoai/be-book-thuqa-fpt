@@ -53,7 +53,7 @@ type BookReserve interface {
 	CheckAvailability(uint) (bool, error)
 	ReserveBook(uint, uint, *time.Time, *time.Time) error
 	AdminConfirmReturnBook(uint) error
-	StudentReturnBook(uint, uint, *time.Time) error
+	StudentReturnBook(uint, uint, *time.Time, *time.Time) error
 	UpdateBookOverdue(*time.Time) error
 	GetBooksStudentReserved(uint, string) (*[]models.BookHistory, error)
 	GetAllBooksStudentReturned() (*[]models.StudentReturnBook, error)
