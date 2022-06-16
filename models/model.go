@@ -87,6 +87,7 @@ func (StudentReturnBook) TableName() string {
 type Response struct {
 	AccountRole string `json:"accountRole"`
 	Token       string `json:"token"`
+	UserId      uint   `json:"userId"`
 }
 
 type LoginDetails struct {

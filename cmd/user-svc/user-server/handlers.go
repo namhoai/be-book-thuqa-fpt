@@ -113,7 +113,7 @@ func (srv *Server) login() http.HandlerFunc {
 		logrus.WithFields(logrus.Fields{
 			"statusCode": http.StatusOK,
 		}).Info(fmt.Sprintf("user login with email: %v", account.Email))
-		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: details.AccountRole, Token: tokenStr})
+		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: details.AccountRole, Token: tokenStr, UserId: account.ID})
 		if err != nil {
 			handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			return
