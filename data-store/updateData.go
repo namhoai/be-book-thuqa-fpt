@@ -6,7 +6,7 @@ import (
 
 func (ds *DataStore) UpdateBook(bookID uint, newTitle, newISBN string,
 	newStock uint, newAuthor, newYear string, newEdition uint,
-	newCover, newAbstract, newCategory string) error {
+	newCover, newAbstract, newCategory string, newRating uint) error {
 	book := &models.Book{}
 	err := ds.Db.Where("id = ?", bookID).First(book).Error
 	if err != nil {
@@ -22,6 +22,7 @@ func (ds *DataStore) UpdateBook(bookID uint, newTitle, newISBN string,
 		"cover":    newCover,
 		"abstract": newAbstract,
 		"category": newCategory,
+		"rating":   newRating,
 	}).Error
 	return err
 }

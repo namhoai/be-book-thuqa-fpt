@@ -56,7 +56,7 @@ type BookReserve interface {
 	StudentReturnBook(uint, uint, *time.Time, *time.Time) error
 	UpdateBookOverdue(*time.Time) error
 	GetBooksStudentOverdue(uint, string) (*[]models.BookHistory, error)
-	GetBooksStudentReserved(uint) (*[]models.BookHistory, error)
+	GetBooksStudentReserved(uint) (*[]models.BookHistoryAll, error)
 	GetAllBooksStudentReturned() (*[]models.StudentReturnBook, error)
 	GetBooksStudentReturned(uint) (*[]models.StudentReturnBook, error)
 }
@@ -67,7 +67,7 @@ type DeleteData interface {
 }
 
 type UpdateData interface {
-	UpdateBook(uint, string, string, uint, string, string, uint, string, string, string) error
+	UpdateBook(uint, string, string, uint, string, string, uint, string, string, string, uint) error
 }
 
 var retryAttempts = 0

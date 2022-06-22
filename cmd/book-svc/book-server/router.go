@@ -31,7 +31,7 @@ func SetupRouter(srv *Server) *chi.Mux {
 		r.Post("/download-image", srv.downloadImageFromS3)
 	})
 	r.Route("/get", func(r chi.Router) {
-		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
+		r.Use(middleware.ChainMiddlewares(false, promMetrics, srv.Env)...)
 		r.Get("/books", srv.getBooks)
 		r.Get("/books-by-title/{title}", srv.getBooksByTitle)
 		r.Get("/books-by-isbn/{isbn}", srv.getBooksByISBN)

@@ -44,6 +44,7 @@ type Book struct {
 	Category      string    `json:"category"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
+	Rating        uint      `json:"rating"`
 }
 
 func (Book) TableName() string {
@@ -56,6 +57,12 @@ type BookHistory struct {
 	ReservedDate *time.Time `json:"reservedDate"`
 	ReturnDate   *time.Time `json:"returnDate"`
 	Status       string     `json:"status"`
+}
+
+type BookHistoryAll struct {
+	BookHistory
+	Name  string `json:"name"`
+	Cover string `json:"cover"`
 }
 
 func (BookHistory) TableName() string {

@@ -124,9 +124,9 @@ func (ds *DataStore) GetBooksStudentOverdue(userID uint, status string) (*[]mode
 	return &history, err
 }
 
-func (ds *DataStore) GetBooksStudentReserved(userID uint) (*[]models.BookHistory, error) {
-	var history []models.BookHistory
-	query := `select * from book_history where user_id = ?`
+func (ds *DataStore) GetBooksStudentReserved(userID uint) (*[]models.BookHistoryAll, error) {
+	var history []models.BookHistoryAll
+	query := `select * from book_history inner join book on book.id=book_history.book_id where book_history.user_id = ?`
 	err := ds.Db.Raw(query, userID).Scan(&history).Error
 	return &history, err
 }

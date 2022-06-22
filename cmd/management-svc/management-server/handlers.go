@@ -300,12 +300,12 @@ func (srv *Server) updateBookOverdue(wr http.ResponseWriter, r *http.Request) {
 func (srv *Server) getBooksStudentOverdue(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "get_book_overdue_of_student", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	userId := chi.URLParam(r, "userId")
+	// authInfo := GetAuthInfoFromContext(ctx)
+	// if authInfo.Role != models.AdminAccount {
+	// 	handleError(w, ctx, srv, "get_book_overdue_of_student", errors.New("permission denied"), http.StatusUnauthorized)
+	// 	return
+	// }
+	userId := chi.URLParam(r, "id")
 	userID, err := strconv.Atoi(userId)
 	if err != nil {
 		handleError(w, ctx, srv, "get_book_overdue_of_student", err, http.StatusInternalServerError)
@@ -329,12 +329,12 @@ func (srv *Server) getBooksStudentOverdue(wr http.ResponseWriter, r *http.Reques
 func (srv *Server) getBooksStudentReserved(wr http.ResponseWriter, r *http.Request) {
 	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
-	authInfo := GetAuthInfoFromContext(ctx)
-	if authInfo.Role != models.AdminAccount {
-		handleError(w, ctx, srv, "get_book_reserved_of_student", errors.New("permission denied"), http.StatusUnauthorized)
-		return
-	}
-	userId := chi.URLParam(r, "userId")
+	// authInfo := GetAuthInfoFromContext(ctx)
+	// if authInfo.Role != models.AdminAccount {
+	// 	handleError(w, ctx, srv, "get_book_reserved_of_student", errors.New("permission denied"), http.StatusUnauthorized)
+	// 	return
+	// }
+	userId := chi.URLParam(r, "id")
 	userID, err := strconv.Atoi(userId)
 	if err != nil {
 		handleError(w, ctx, srv, "get_book_reserved_of_student", err, http.StatusInternalServerError)
@@ -405,8 +405,10 @@ func (srv *Server) updateBook(wr http.ResponseWriter, r *http.Request) {
 	cover := r.FormValue("cover")
 	abstract := r.FormValue("abstract")
 	category := r.FormValue("category")
+	rating := r.FormValue("rating")
+	ratingInt, _ := strconv.Atoi(rating)
 
-	err := srv.DB.UpdateBook(uint(bookID), bookName, isbn, uint(stockInt), author, year, uint(editionInt), cover, abstract, category)
+	err := srv.DB.UpdateBook(uint(bookID), bookName, isbn, uint(stockInt), author, year, uint(editionInt), cover, abstract, category, uint(ratingInt))
 	if err != nil {
 		handleError(w, ctx, srv, "update_name_of_book", err, http.StatusInternalServerError)
 		return
