@@ -38,6 +38,7 @@ func init() {
 			  category varchar(255) NOT NULL,
 			  available bool DEFAULT true,
 			  available_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			  rating int(20),
 			  PRIMARY KEY (id),
 			  UNIQUE KEY id (id)
 			);

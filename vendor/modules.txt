@@ -44,6 +44,8 @@ github.com/aws/aws-sdk-go/private/protocol/restjson
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/service/s3/s3iface
+github.com/aws/aws-sdk-go/service/s3/s3manager
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
@@ -58,6 +60,8 @@ github.com/dgrijalva/jwt-go
 github.com/fluent/fluent-logger-golang/fluent
 # github.com/go-chi/chi v4.0.2+incompatible
 github.com/go-chi/chi
+# github.com/go-chi/cors v1.2.1
+github.com/go-chi/cors
 # github.com/go-sql-driver/mysql v1.4.1
 github.com/go-sql-driver/mysql
 # github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
