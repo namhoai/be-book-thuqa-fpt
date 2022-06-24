@@ -191,6 +191,11 @@ func (srv *Server) reserveBook(wr http.ResponseWriter, r *http.Request) {
 		handleError(w, ctx, srv, "reserve_book", err, http.StatusInternalServerError)
 		return
 	}
+	days := returnDate.Sub(reservedDate).Hours() / 24
+	if days > 42 {
+		handleError(w, ctx, srv, "Book cannot be reserved for more than 6 weeks", err, http.StatusBadRequest)
+		return
+	}
 	err = srv.DB.ReserveBook(uint(bookID), uint(userID), &reservedDate, &returnDate)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

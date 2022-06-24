@@ -126,6 +126,26 @@ func (srv *Server) getBooksByISBN(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (srv *Server) getBooksByRating(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	rating := chi.URLParam(r, "rating")
+	ratingInt, _ := strconv.Atoi(rating)
+	books, err := srv.DB.GetBooksByRating(uint(ratingInt))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_books_by_rating", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_books_by_rating", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(books)
+	if err != nil {
+		handleError(w, ctx, srv, "get_books_by_rating", err, http.StatusInternalServerError)
+	}
+}
+
 func (srv *Server) getBookByBookID(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()

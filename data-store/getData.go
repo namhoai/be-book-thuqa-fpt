@@ -65,6 +65,12 @@ func (ds *DataStore) GetBooksByAvailable(available bool) (*[]models.Book, error)
 	return &books, err
 }
 
+func (ds *DataStore) GetBooksByRating(rating uint) (*[]models.Book, error) {
+	var books []models.Book
+	err := ds.Db.Where("rating=?", rating).Find(&books).Error
+	return &books, err
+}
+
 func (ds *DataStore) GetUserByEmail(email string) (*models.Account, error) {
 	user := &models.Account{}
 	err := ds.Db.Where("email=? and account_role='user'", email).Find(user).Error

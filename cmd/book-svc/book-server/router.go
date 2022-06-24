@@ -40,6 +40,7 @@ func SetupRouter(srv *Server) *chi.Mux {
 		r.Get("/book-by-author/{author}", srv.getBooksByAuthor)
 		r.Get("/book-by-year/{year}", srv.getBooksByYear)
 		r.Get("/book-by-edition/{edition}", srv.getBooksByEdition)
+		r.Get("/book-by-rating/{rating}", srv.getBooksByRating)
 		r.Get("/book-available", srv.getBooksByAvailable)
 		r.Get("/book-borrow", srv.getBooksByBorrow)
 	})

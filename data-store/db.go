@@ -44,6 +44,7 @@ type GetData interface {
 	GetUsers() (*[]models.Account, error)
 	GetAllBooksReturnByUser() (*[]models.StudentReturnBook, error)
 	GetBooksReturnByUser(uint) (*models.StudentReturnBook, error)
+	GetBooksByRating(uint) (*[]models.Book, error)
 }
 
 type BookReserve interface {
