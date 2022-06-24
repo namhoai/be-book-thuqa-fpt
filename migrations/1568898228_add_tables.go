@@ -13,9 +13,6 @@ func init() {
 			  reserved_date timestamp,
 			  return_date timestamp,
 			  status varchar(20) NOT NULL,
-			  PRIMARY KEY (book_id,user_id),
-			  FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE,
-			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 			);
 			`,
 			`
@@ -24,9 +21,6 @@ func init() {
 			  user_id bigint(20) NOT NULL,
 			  reserved_date timestamp,
 			  return_date timestamp,
-			  PRIMARY KEY (book_id,user_id),
-			  FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE,
-			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 			);
 			`,
 			`
@@ -35,9 +29,6 @@ func init() {
 			  user_id bigint(20) NOT NULL,
 			  reserved_date timestamp,
 			  return_date timestamp,
-			  PRIMARY KEY (book_id,user_id),
-			  FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE,
-			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 			);
 			`,
 		},

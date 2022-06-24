@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
@@ -50,8 +49,6 @@ func (srv *Server) addBook(wr http.ResponseWriter, r *http.Request) {
 		handleError(w, ctx, srv, "add_book", err, http.StatusInternalServerError)
 		return
 	}
-	book.AvailableDate = time.Now()
-	book.Available = true
 	err = srv.DB.CreateBook(*book)
 	if err != nil {
 		if strings.Contains(err.Error(), "1062") {
@@ -251,7 +248,7 @@ func (srv *Server) getBooksByEdition(wr http.ResponseWriter, r *http.Request) {
 func (srv *Server) getBooksByAvailable(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	books, err := srv.DB.GetBooksByAvailable(true)
+	books, err := srv.DB.GetBooksByAvailable()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
 			handleError(w, ctx, srv, "get_books_by_available", errors.New("no record found"), http.StatusOK)
@@ -266,21 +263,39 @@ func (srv *Server) getBooksByAvailable(wr http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (srv *Server) getBooksByBorrow(wr http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBorrowedBooks(wr http.ResponseWriter, r *http.Request) {
 	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
-	books, err := srv.DB.GetBooksByAvailable(false)
+	books, err := srv.DB.GetBorrowedBooks()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
-			handleError(w, ctx, srv, "get_books_by_borrow", errors.New("no record found"), http.StatusOK)
+			handleError(w, ctx, srv, "get_borrowed_books", errors.New("no record found"), http.StatusOK)
 			return
 		}
-		handleError(w, ctx, srv, "get_books_by_borrow", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_borrowed_books", err, http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(w).Encode(books)
 	if err != nil {
-		handleError(w, ctx, srv, "get_books_by_borrow", err, http.StatusInternalServerError)
+		handleError(w, ctx, srv, "get_borrowed_books", err, http.StatusInternalServerError)
+	}
+}
+
+func (srv *Server) getOverdueBooks(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
+	ctx := r.Context()
+	books, err := srv.DB.GetOverdueBooks()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound || len(*books) == 0 {
+			handleError(w, ctx, srv, "get_overdue_books", errors.New("no record found"), http.StatusOK)
+			return
+		}
+		handleError(w, ctx, srv, "get_overdue_books", err, http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(books)
+	if err != nil {
+		handleError(w, ctx, srv, "get_overdue_books", err, http.StatusInternalServerError)
 	}
 }
 

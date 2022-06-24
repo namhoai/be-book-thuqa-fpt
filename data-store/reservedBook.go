@@ -33,7 +33,11 @@ func (ds *DataStore) CheckAvailability(id uint) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return book.Available, nil
+	if book.Stock == 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
 
 func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *time.Time) error {
@@ -42,7 +46,7 @@ func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *
 	if err != nil {
 		return err
 	}
-	if book.Available == false {
+	if book.Stock == 0 {
 		queue := &models.BookQueue{
 			UserID:       userID,
 			BookID:       bookID,
@@ -55,9 +59,17 @@ func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *
 		}
 		return errors.New("book unavailable")
 	}
+	var bookHistory []models.BookHistory
+	query := `select * from book_history where user_id = ?`
+	err = ds.Db.Raw(query, userID).Scan(&bookHistory).Error
+	if err != nil {
+		return err
+	}
+	if len(bookHistory) >= 10 {
+		return errors.New("maximum reserved books reached")
+	}
 	err = ds.Db.Model(book).Where("id = ?", bookID).Updates(map[string]interface{}{
-		"available":      false,
-		"available_date": returnDate,
+		"stock": book.Stock - 1,
 	}).Error
 	if err != nil {
 		return err
@@ -66,23 +78,22 @@ func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *
 		UserID:       userID,
 		BookID:       bookID,
 		ReservedDate: reservedDate,
-		ReturnDate:   reservedDate,
+		ReturnDate:   returnDate,
 		Status:       "borrowed",
 	}
 	return ds.Db.Create(history).Error
 }
 
-func (ds *DataStore) AdminConfirmReturnBook(bookID uint) error {
+func (ds *DataStore) AdminConfirmReturnBook(bookID, studentID uint) error {
 	book := &models.Book{}
 	err := ds.Db.Model(book).Where("id = ?", bookID).Updates(map[string]interface{}{
-		"available":      true,
-		"available_date": time.Now(),
+		"stock": book.Stock + 1,
 	}).Error
 	if err != nil {
 		return err
 	}
 	history := &models.BookHistory{}
-	return ds.Db.Model(history).Where("book_id = ?", bookID).Updates(map[string]interface{}{
+	return ds.Db.Model(history).Where("book_id = ? and user_id = ?", bookID, studentID).Updates(map[string]interface{}{
 		"returnDate": time.Now(),
 		"status":     "returned",
 	}).Error

@@ -221,11 +221,13 @@ func (srv *Server) adminConfirmReturnBook(wr http.ResponseWriter, r *http.Reques
 	}
 	id := chi.URLParam(r, "id")
 	bookID, err := strconv.Atoi(id)
+	user := r.FormValue("userId")
+	userID, _ := strconv.Atoi(user)
 	if err != nil {
 		handleError(w, ctx, srv, "return_book", err, http.StatusInternalServerError)
 		return
 	}
-	err = srv.DB.AdminConfirmReturnBook(uint(bookID))
+	err = srv.DB.AdminConfirmReturnBook(uint(bookID), uint(userID))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			handleError(w, ctx, srv, "return_book", errors.New("no record found"), http.StatusOK)

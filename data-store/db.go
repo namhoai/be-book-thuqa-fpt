@@ -38,7 +38,9 @@ type GetData interface {
 	GetBooksByStock(uint) (*[]models.Book, error)
 	GetBooksByYear(string) (*[]models.Book, error)
 	GetBooksByEdition(uint) (*[]models.Book, error)
-	GetBooksByAvailable(bool) (*[]models.Book, error)
+	GetBooksByAvailable() (*[]models.Book, error)
+	GetBorrowedBooks() (*[]models.BookHistory, error)
+	GetOverdueBooks() (*[]models.BookHistory, error)
 	GetUserByEmail(string) (*models.Account, error)
 	GetUserByID(uint) (*models.Account, error)
 	GetUsers() (*[]models.Account, error)
@@ -53,7 +55,7 @@ type BookReserve interface {
 	GetCompleteHistory() (*[]models.BookHistory, error)
 	CheckAvailability(uint) (bool, error)
 	ReserveBook(uint, uint, *time.Time, *time.Time) error
-	AdminConfirmReturnBook(uint) error
+	AdminConfirmReturnBook(uint, uint) error
 	StudentReturnBook(uint, uint, *time.Time, *time.Time) error
 	UpdateBookOverdue(*time.Time) error
 	GetBooksStudentOverdue(uint, string) (*[]models.BookHistory, error)

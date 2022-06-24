@@ -59,9 +59,21 @@ func (ds *DataStore) GetBooksByEdition(edition uint) (*[]models.Book, error) {
 	return &books, err
 }
 
-func (ds *DataStore) GetBooksByAvailable(available bool) (*[]models.Book, error) {
+func (ds *DataStore) GetBooksByAvailable() (*[]models.Book, error) {
 	var books []models.Book
-	err := ds.Db.Where("available=?", available).Find(&books).Error
+	err := ds.Db.Where("stock>0").Find(&books).Error
+	return &books, err
+}
+
+func (ds *DataStore) GetBorrowedBooks() (*[]models.BookHistory, error) {
+	var books []models.BookHistory
+	err := ds.Db.Where("status = 'borrowed'").Find(&books).Error
+	return &books, err
+}
+
+func (ds *DataStore) GetOverdueBooks() (*[]models.BookHistory, error) {
+	var books []models.BookHistory
+	err := ds.Db.Where("status = 'overdue'").Find(&books).Error
 	return &books, err
 }
 

@@ -33,18 +33,16 @@ func (Account) TableName() string {
 
 type Book struct {
 	BaseModel
-	Name          string    `json:"name"`
-	ISBN          string    `json:"isbn"`
-	Stock         uint      `json:"stock"`
-	Author        string    `json:"author"`
-	Year          string    `json:"year"`
-	Edition       uint      `json:"edition"`
-	Cover         string    `json:"cover"`
-	Abstract      string    `json:"abstract"`
-	Category      string    `json:"category"`
-	Available     bool      `json:"available"`
-	AvailableDate time.Time `json:"availableDate"`
-	Rating        uint      `json:"rating"`
+	Name     string `json:"name"`
+	ISBN     string `json:"isbn"`
+	Stock    uint   `json:"stock"`
+	Author   string `json:"author"`
+	Year     string `json:"year"`
+	Edition  uint   `json:"edition"`
+	Cover    string `json:"cover"`
+	Abstract string `json:"abstract"`
+	Category string `json:"category"`
+	Rating   uint   `json:"rating"`
 }
 
 func (Book) TableName() string {

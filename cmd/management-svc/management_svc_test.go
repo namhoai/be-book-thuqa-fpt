@@ -77,7 +77,6 @@ var _ = Describe("Management-Service", func() {
 				var book models.Book
 				err = dataStore.Db.Where("id = ?", "1010").Find(&book).Error
 				Expect(err).To(BeNil())
-				Expect(book.Available).To(BeEquivalentTo(false))
 			})
 		})
 
@@ -109,7 +108,6 @@ var _ = Describe("Management-Service", func() {
 				var book models.Book
 				err = dataStore.Db.Where("id = ?", "1010").Find(&book).Error
 				Expect(err).To(BeNil())
-				Expect(book.Available).To(BeEquivalentTo(true))
 			})
 		})
 	})

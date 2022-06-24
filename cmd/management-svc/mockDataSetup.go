@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/library/envConfig"
@@ -43,11 +41,9 @@ func setupAuthToken(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 
 func setupMockData(db *gorm.DB) error {
 	book := models.Book{
-		BaseModel:     *&models.BaseModel{ID: 101010},
-		Name:          "intTestBook",
-		Author:        "intTestAuthor",
-		Available:     true,
-		AvailableDate: time.Now(),
+		BaseModel: *&models.BaseModel{ID: 101010},
+		Name:      "intTestBook",
+		Author:    "intTestAuthor",
 	}
 	err := db.Create(&book).Error
 	if err != nil {

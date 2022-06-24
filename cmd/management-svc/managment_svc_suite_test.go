@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/library/envConfig"
@@ -52,11 +50,9 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 
 func setupTestData(db *gorm.DB) error {
 	book := models.Book{
-		BaseModel:     *&models.BaseModel{ID: 1010},
-		Name:          "testBook",
-		Author:        "testAuthor",
-		Available:     true,
-		AvailableDate: time.Now(),
+		BaseModel: *&models.BaseModel{ID: 1010},
+		Name:      "testBook",
+		Author:    "testAuthor",
 	}
 	err := db.Create(&book).Error
 	if err != nil {

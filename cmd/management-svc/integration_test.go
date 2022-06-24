@@ -49,7 +49,6 @@ func TestManagementService(t *testing.T) {
 			var book models.Book
 			err = dataStore.Db.Where("id = ?", "101010").Find(&book).Error
 			So(err, ShouldBeNil)
-			So(book.Available, ShouldEqual, false)
 		})
 	})
 
@@ -87,7 +86,6 @@ func TestManagementService(t *testing.T) {
 			var book models.Book
 			err = dataStore.Db.Where("id = ?", "101010").Find(&book).Error
 			So(err, ShouldBeNil)
-			So(book.Available, ShouldEqual, true)
 		})
 	})
 }

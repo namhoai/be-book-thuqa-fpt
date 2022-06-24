@@ -31,7 +31,7 @@ func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 		r.Get("/overdue-history", srv.getOverdueHistory)
 		r.Get("/student-return-books", srv.getAllBooksStudentReturned)
 		r.Get("/student-return-book/{id}", srv.getBooksStudentReturned)
-		r.Get("/confirm-return-book/{id}", srv.adminConfirmReturnBook)
+		r.Post("/confirm-return-book/{id}", srv.adminConfirmReturnBook)
 		r.Delete("/delete-book/{id}", srv.deleteBook)
 		r.Put("/update-book/{id}", srv.updateBook)
 		r.Get("/update-book-overdue", srv.updateBookOverdue)
