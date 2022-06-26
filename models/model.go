@@ -20,11 +20,13 @@ type BaseModel struct {
 
 type Account struct {
 	BaseModel
-	Email        string `json:"email"`
-	AccountRole  string `json:"accountRole"`
-	Password     string `gorm:"-" json:"password"`
-	Status       string `json:"status"`
-	PasswordHash string `json:"-"`
+	Email         string `json:"email"`
+	AccountRole   string `json:"accountRole"`
+	Password      string `gorm:"-" json:"password"`
+	Status        string `json:"status"`
+	PasswordHash  string `json:"-"`
+	ReservedBooks uint   `json:"reservedBooks"`
+	OverdueBooks  uint   `json:"overdueBooks"`
 }
 
 func (Account) TableName() string {

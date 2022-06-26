@@ -16,6 +16,8 @@ func init() {
 			  account_role varchar(255) NOT NULL,
 			  password_hash varchar(255) NOT NULL,
 			  status varchar(255),
+			  reserved_books int(20) NOT NULL DEFAULT 0,
+			  overdue_books int(20) NOT NULL DEFAULT 0,
 			  PRIMARY KEY (id),
 			  UNIQUE KEY id (id),
 			  UNIQUE KEY email (email)

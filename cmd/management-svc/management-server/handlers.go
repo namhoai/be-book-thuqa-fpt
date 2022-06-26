@@ -192,7 +192,7 @@ func (srv *Server) reserveBook(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 	days := returnDate.Sub(reservedDate).Hours() / 24
-	fmt.Println(days)
+	// fmt.Println(days)
 	if days > 42.0 {
 		// handleError(w, ctx, srv, "Book_cannot_be_reserved_for_more_than_6_weeks", http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Book cannot be reserved for more than 6 weeks!")

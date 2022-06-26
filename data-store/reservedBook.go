@@ -75,6 +75,19 @@ func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *
 		return err
 	}
 	history := &models.BookHistory{}
+	user := &models.Account{}
+	err = ds.Db.Where("id = ?", userID).First(user).Error
+	if err != nil {
+		return err
+	}
+	// fmt.Println("p reserved books is:", user.ReservedBooks)
+	err = ds.Db.Model(user).Where("id = ?", userID).Updates(map[string]interface{}{
+		"reservedBooks": user.ReservedBooks + 1,
+	}).Error
+	// fmt.Println("n reserved books is:", user.ReservedBooks)
+	if err != nil {
+		return err
+	}
 	for _, v := range bookHistory {
 		if v.BookID == bookID {
 			return ds.Db.Model(history).Where("book_id = ? and user_id = ?", bookID, userID).Updates(map[string]interface{}{
@@ -101,6 +114,29 @@ func (ds *DataStore) AdminConfirmReturnBook(bookID, studentID uint) error {
 		return err
 	}
 	history := &models.BookHistory{}
+	user := &models.Account{}
+	err = ds.Db.Where("id = ?", studentID).First(user).Error
+	if err != nil {
+		return err
+	}
+	err = ds.Db.Model(user).Where("id = ?", studentID).Updates(map[string]interface{}{
+		"reservedBooks": user.ReservedBooks - 1,
+	}).Error
+	if err != nil {
+		return err
+	}
+	err = ds.Db.Where("book_id = ? and user_id = ?", bookID, studentID).Find(history).Error
+	if err != nil {
+		return err
+	}
+	if history.Status == "overdue" {
+		err = ds.Db.Model(user).Where("id = ?", studentID).Updates(map[string]interface{}{
+			"overdueBooks": user.OverdueBooks - 1,
+		}).Error
+		if err != nil {
+			return err
+		}
+	}
 	return ds.Db.Model(history).Where("book_id = ? and user_id = ?", bookID, studentID).Updates(map[string]interface{}{
 		"returnDate": time.Now(),
 		"status":     "returned",
@@ -130,6 +166,19 @@ func (ds *DataStore) UpdateBookOverdue(currentTime *time.Time) error {
 	err := ds.Db.Raw(query, currentTime).Scan(&books).Error
 	if err != nil {
 		return nil
+	}
+	for _, book := range books {
+		user := &models.Account{}
+		err = ds.Db.Where("id = ?", book.UserID).First(user).Error
+		if err != nil {
+			return err
+		}
+		err = ds.Db.Model(user).Where("id = ?", book.UserID).Updates(map[string]interface{}{
+			"overdueBooks": user.OverdueBooks + 1,
+		}).Error
+		if err != nil {
+			return err
+		}
 	}
 	return ds.Db.Model(books).Updates(map[string]interface{}{
 		"status": "overdue",
