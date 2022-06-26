@@ -51,14 +51,14 @@ type GetData interface {
 
 type BookReserve interface {
 	GetHistory(uint) (*[]models.BookHistory, error)
-	GetBooksbyStatus(string) (*[]models.BookHistory, error)
+	GetBooksbyStatus(string) (*[]models.BookHistoryAll, error)
 	GetCompleteHistory() (*[]models.BookHistory, error)
 	CheckAvailability(uint) (bool, error)
 	ReserveBook(uint, uint, *time.Time, *time.Time) error
 	AdminConfirmReturnBook(uint, uint) error
 	StudentReturnBook(uint, uint, *time.Time, *time.Time) error
 	UpdateBookOverdue(*time.Time) error
-	GetBooksStudentOverdue(uint, string) (*[]models.BookHistory, error)
+	GetBooksStudentOverdue(uint) (*[]models.BookHistoryAll, error)
 	GetBooksStudentReserved(uint) (*[]models.BookHistoryAll, error)
 	GetAllBooksStudentReturned() (*[]models.StudentReturnBook, error)
 	GetBooksStudentReturned(uint) (*[]models.StudentReturnBook, error)

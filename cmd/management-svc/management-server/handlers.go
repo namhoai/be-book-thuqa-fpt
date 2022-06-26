@@ -192,8 +192,10 @@ func (srv *Server) reserveBook(wr http.ResponseWriter, r *http.Request) {
 		return
 	}
 	days := returnDate.Sub(reservedDate).Hours() / 24
-	if days > 42 {
-		handleError(w, ctx, srv, "Book cannot be reserved for more than 6 weeks", err, http.StatusBadRequest)
+	fmt.Println(days)
+	if days > 42.0 {
+		// handleError(w, ctx, srv, "Book_cannot_be_reserved_for_more_than_6_weeks", http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Book cannot be reserved for more than 6 weeks!")
 		return
 	}
 	err = srv.DB.ReserveBook(uint(bookID), uint(userID), &reservedDate, &returnDate)
@@ -318,7 +320,7 @@ func (srv *Server) getBooksStudentOverdue(wr http.ResponseWriter, r *http.Reques
 		handleError(w, ctx, srv, "get_book_overdue_of_student", err, http.StatusInternalServerError)
 		return
 	}
-	history, err := srv.DB.GetBooksStudentOverdue(uint(userID), "overdue")
+	history, err := srv.DB.GetBooksStudentOverdue(uint(userID))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			handleError(w, ctx, srv, "get_book_overdue_of_student", errors.New("no record found"), http.StatusOK)

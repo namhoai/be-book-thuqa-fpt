@@ -20,9 +20,9 @@ func (ds *DataStore) GetHistory(id uint) (*[]models.BookHistory, error) {
 	return &history, err
 }
 
-func (ds *DataStore) GetBooksbyStatus(status string) (*[]models.BookHistory, error) {
-	var history []models.BookHistory
-	query := `select * from book_history where status = ?`
+func (ds *DataStore) GetBooksbyStatus(status string) (*[]models.BookHistoryAll, error) {
+	var history []models.BookHistoryAll
+	query := `select * from book_history inner join book on book.id=book_history.book_id where book_history.status = ?`
 	err := ds.Db.Raw(query, status).Scan(&history).Error
 	return &history, err
 }
@@ -74,7 +74,15 @@ func (ds *DataStore) ReserveBook(bookID, userID uint, reservedDate, returnDate *
 	if err != nil {
 		return err
 	}
-	history := &models.BookHistory{
+	history := &models.BookHistory{}
+	for _, v := range bookHistory {
+		if v.BookID == bookID {
+			return ds.Db.Model(history).Where("book_id = ? and user_id = ?", bookID, userID).Updates(map[string]interface{}{
+				"status": "borrowed",
+			}).Error
+		}
+	}
+	history = &models.BookHistory{
 		UserID:       userID,
 		BookID:       bookID,
 		ReservedDate: reservedDate,
@@ -128,16 +136,16 @@ func (ds *DataStore) UpdateBookOverdue(currentTime *time.Time) error {
 	}).Error
 }
 
-func (ds *DataStore) GetBooksStudentOverdue(userID uint, status string) (*[]models.BookHistory, error) {
-	var history []models.BookHistory
-	query := `select * from book_history where user_id = ? and status = ?`
-	err := ds.Db.Raw(query, userID, status).Scan(&history).Error
+func (ds *DataStore) GetBooksStudentOverdue(userID uint) (*[]models.BookHistoryAll, error) {
+	var history []models.BookHistoryAll
+	query := `select * from book_history inner join book on book.id=book_history.book_id where book_history.user_id = ? and book_history.status = 'overdue'`
+	err := ds.Db.Raw(query, userID).Scan(&history).Error
 	return &history, err
 }
 
 func (ds *DataStore) GetBooksStudentReserved(userID uint) (*[]models.BookHistoryAll, error) {
 	var history []models.BookHistoryAll
-	query := `select * from book_history inner join book on book.id=book_history.book_id where book_history.user_id = ?`
+	query := `select * from book_history inner join book on book.id=book_history.book_id where book_history.user_id = ? and book_history.status = 'borrowed'`
 	err := ds.Db.Raw(query, userID).Scan(&history).Error
 	return &history, err
 }
