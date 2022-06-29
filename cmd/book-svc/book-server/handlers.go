@@ -25,10 +25,10 @@ import (
 )
 
 const (
-	AWS_S3_BUCKET = "m-fke-test"
-	S3_ID         = "122b6c03649fc4b36723"
-	S3_SECRET     = "FJm7hzvP63vaW4d0FOBeqMGA5HIDZSluzKieO4cx"
-	S3_URL        = "https://s3-sgn09.fptcloud.com"
+	AWS_S3_BUCKET = "xxx"
+	S3_ID         = "xxx"
+	S3_SECRET     = "xxx"
+	S3_URL        = "xxx"
 )
 
 func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
